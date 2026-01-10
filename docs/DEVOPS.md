@@ -41,3 +41,35 @@ The CI/CD pipeline is triggered on every push to the `main` or `develop` branche
 -   **Migrations**: Database migrations are handled by our ORM (Prisma) and are run as part of the deployment process.
 -   **Backups**: The production database is backed up daily, with backups stored in a secure, off-site location.
 -   **Replication**: The production database uses a master-slave replication setup to ensure high availability.
+
+---
+
+## **Phase 2 Additions**
+
+### **API Monitoring**
+-   **Tools**: Prometheus + Grafana
+-   **Key Metrics**:
+    -   Request rates
+    -   Response times (p95, p99)
+    -   Error rates (4xx, 5xx)
+    -   Custom business metrics (e.g., transactions per second).
+
+### **API Documentation**
+-   **Specification**: OpenAPI 3.0
+-   **Tools**:
+    -   Swagger UI for interactive documentation.
+    -   Automatic generation of Postman Collections.
+
+### **Load Testing**
+-   **Tools**: Artillery and k6.
+-   **Strategy**:
+    -   Run load tests before major releases.
+    -   Simulate realistic user traffic patterns.
+    -   Identify and address performance bottlenecks.
+
+### **Database Optimization**
+-   **Strategy**:
+    -   Regular query optimization and analysis.
+    -   Implement a robust indexing strategy.
+    -   Use read replicas to offload read-heavy queries.
+    -   Implement connection pooling with PgBouncer to manage database connections efficiently.

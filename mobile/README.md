@@ -11,13 +11,24 @@ This directory contains the source code for the Contacto mobile application, bui
 
 ## Tech Stack
 
--   **Framework**: React Native with Expo
--   **Language**: TypeScript
+-   **Framework**: React Native (0.73+)
+-   **State Management**: Redux Toolkit + Redux Persist
+-   **Local Database**: Realm (encrypted)
+-   **Networking**:
+    -   Axios
+    -   `@react-native-async-storage/async-storage` for session storage.
+    -   NetInfo for connectivity detection.
+-   **UI Components**:
+    -   React Native Paper
+    -   Victory Native for charts.
 -   **Navigation**: React Navigation
--   **UI Components**: React Native Paper or a custom component library
--   **State Management**: Redux Toolkit
--   **Data Fetching**: RTK Query
--   **Storage**: AsyncStorage
+-   **Barcode Scanning**:
+    -   `react-native-vision-camera`
+    -   Google ML Kit Barcode Scanner
+-   **Hardware & Printing**:
+    -   `react-native-thermal-printer`
+    -   `react-native-bluetooth-escpos-printer`
+    -   `react-native-ble-plx` for Bluetooth Low Energy communication.
 
 ## Directory Structure
 

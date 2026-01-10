@@ -18,14 +18,24 @@ This directory contains the frontend code for the Contacto platform, built with 
 -   **Forms**: React Hook Form
 -   **Testing**: Jest, React Testing Library, and Playwright
 
+## Tech Stack (Phase 2 Additions for Business Dashboard)
+
+-   **Charts & Graphs**: Recharts
+-   **Data Tables**: TanStack Table
+-   **Date Manipulation**: date-fns
+-   **Real-time Updates**: socket.io-client
+-   **File Uploads**: React Dropzone
+-   **Data Export**: XLSX for Excel and jsPDF for PDF.
+
 ## Directory Structure
 
 -   **`app/`**: The core of the application, using the Next.js App Router. Contains all routes, pages, and layouts.
 -   **`components/`**: Shared, reusable UI components used throughout the application.
 -   **`constants/`**: Application-wide constants, such as navigation links, form validation schemas, etc.
--.  **`contexts/`**: React Context providers for managing global state that doesn't fit well into Zustand or TanStack Query.
+-   **`contexts/`**: React Context providers for managing global state that doesn't fit well into Zustand or TanStack Query.
 -   **`hooks/`**: Custom React hooks that encapsulate reusable logic.
 -   **`lib/`**: Utility functions and helper modules that are specific to the frontend.
 -   **`public/`**: Static assets that are publicly accessible, such as images, fonts, and favicons.
 -   **`styles/`**: Global styles and Tailwind CSS configuration.
 -   **`utils/`**: General-purpose utility functions that can be used anywhere in the application.
+-   **`docs/`**: Contains detailed documentation specific to the frontend, such as the **[Business Dashboard Architecture](docs/DASHBOARD_ARCHITECTURE.md)**.

@@ -11,7 +11,12 @@ This directory is the home for all the shared, reusable UI components that make 
 ## Structure
 
 -   **`ui/`**: This subdirectory contains the low-level, reusable UI components that are styled with Tailwind CSS and are part of our design system (e.g., `Button.tsx`, `Input.tsx`, `Card.tsx`). These are the building blocks of our application's UI.
+-   **`dashboard/`**: This directory will house all the components specifically related to the Business Dashboard. Given the complexity of the dashboard, it will be further subdivided by feature. For a detailed breakdown of the dashboard's modules, see the **[Dashboard Architecture Document](../docs/DASHBOARD_ARCHITECTURE.md)**.
+    -   `dashboard/overview/`: Components for the main overview dashboard (e.g., `SalesChart.tsx`, `KpiCard.tsx`).
+    -   `dashboard/sales/`: Components for the POS and sales management interface (e.g., `TransactionForm.tsx`, `SalesHistoryTable.tsx`).
+    -   `dashboard/inventory/`: Components for managing products, stock, and suppliers (e.g., `ProductList.tsx`, `StockAdjustmentModal.tsx`).
+    -   `dashboard/crm/`: Components for the customer relationship management section (e.g., `CustomerProfile.tsx`, `LoyaltyProgramSettings.tsx`).
+    -   `dashboard/reports/`: Components for displaying and building reports.
 -   **`shared/`**: This directory is for more complex components that are used in multiple parts of the application, but are not as generic as the `ui` components (e.g., `Header.tsx`, `Footer.tsx`, `ProfessionalCard.tsx`).
--   **`feature-specific/`**: (Optional) For very complex components that are only used within a specific feature, we might create subdirectories like `components/profile/` or `components/search/`.
 
 By organizing our components in this way, we can easily find, reuse, and maintain them as the application grows.

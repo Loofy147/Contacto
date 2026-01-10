@@ -9,19 +9,37 @@ This document provides a high-level overview of the technical architecture of th
 -   **Cloud-Native**: The platform is designed to be deployed and run in a cloud environment, taking advantage of services like containerization and managed databases.
 -   **Security by Design**: Security is a primary consideration at every layer of the architecture.
 
-## System Diagram
+## Backend Architecture
+
+The backend is a set of Node.js microservices written in TypeScript. Each service is responsible for a specific business domain. Services communicate with each other asynchronously via an event bus (e.g., RabbitMQ) and expose their functionality through a secure API Gateway.
+
+### API Architecture Diagram
 
 ```
-[Insert system diagram here - e.g., using Mermaid or a diagramming tool]
+┌─────────────────────────────────────────────────────────┐
+│                    API GATEWAY (Kong/AWS)                │
+│  - Rate Limiting  - Authentication  - Load Balancing    │
+│  - Caching  - Analytics  - Request/Response Transform   │
+└─────────────────────────────────────────────────────────┘
+                            │
+        ┌───────────────────┼───────────────────┐
+        │                   │                   │
+┌───────▼─────────┐ ┌──────▼────────┐ ┌────────▼────────┐
+│  Auth Service   │ │ Business Svc  │ │  Payment Hub    │
+│  - OAuth 2.0    │ │  - CRUD       │ │  - Orchestration│
+│  - JWT          │ │  - Analytics  │ │  - Routing      │
+│  - API Keys     │ │  - Reports    │ │  - KYC/AML      │
+└────────┬────────┘ └───────┬───────┘ └────────┬────────┘
+         │                  │                  │
+┌────────▼─────────────────▼────────┐ ┌────────▼────────┐
+│    Shared Services & Data Layer   │ │ SATIM Integration │
+│ - PostgreSQL, Redis, RabbitMQ...  │ │ (National Switch) │
+└───────────────────────────────────┘ └───────────────────┘
 ```
 
 ## Frontend Architecture
 
 The frontend is a modern web application built with Next.js and React. It leverages Server-Side Rendering (SSR) and Static Site Generation (SSG) for optimal performance and SEO. The UI is built as a hierarchy of reusable components, and global state is managed with Zustand and TanStack Query.
-
-## Backend Architecture
-
-The backend is a set of Node.js microservices written in TypeScript. Each service is responsible for a specific business domain (e.g., users, professionals, appointments). Services communicate with each other asynchronously via an event bus (e.g., RabbitMQ). Data is stored in a PostgreSQL database, with Redis used for caching and session management.
 
 ## Mobile Architecture
 

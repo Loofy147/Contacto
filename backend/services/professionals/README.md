@@ -1,28 +1,17 @@
-# Professionals Service
+# Business Management Service (Professionals)
 
-The Professionals Service is the core of the Contacto directory platform. It manages the profiles of all professionals, including their services, portfolios, and other business-related information.
+This service manages the core business information for professionals and merchants on the platform. It handles the CRUD operations for business profiles and provides access to high-level analytics and reports.
 
 ## Responsibilities
 
--   **Profile Management**: Creating, updating, and deleting professional profiles.
--   **Service Listings**: Managing the services offered by each professional, including descriptions and pricing.
--   **Portfolio Management**: Handling the upload and management of portfolio items (images, videos, etc.).
--   **Verification**: Managing the verification status of professionals to build trust on the platform.
--   **Search and Discovery**: Providing robust search and filtering capabilities to help users find the right professional.
+-   **Business Profile Management**: Creating, retrieving, updating, and deleting the core profile of a business or professional.
+-   **Business Analytics**: Providing aggregated statistics and analytics about the business's performance.
+-   **Reporting**: Generating structured reports (e.g., daily sales, financial summaries).
 
-## API Endpoints
+## API Endpoints (v1)
 
--   `GET /api/professionals`: Get a list of professionals with filtering and pagination.
--   `GET /api/professionals/:id`: Get the detailed profile of a specific professional.
--   `POST /api/professionals`: Create a new professional profile (requires user to be authenticated).
--   `PUT /api/professionals/:id`: Update a professional's profile.
--   `DELETE /api/professionals/:id`: Delete a professional's profile.
--   `POST /api/professionals/:id/services`: Add a new service to a professional's profile.
--   `PUT /api/professionals/:id/services/:serviceId`: Update a service.
--   `DELETE /api/professionals/:id/services/:serviceId`: Delete a service.
--   `POST /api/professionals/:id/portfolio`: Add a new item to a professional's portfolio.
--   `DELETE /api/professionals/:id/portfolio/:itemId`: Delete a portfolio item.
-
-## Data Model (`professionals`)
-
-Refer to the main `README.md` in the `database` directory for the detailed schema of the `professionals` table and its related tables (`services`, `portfolio_items`, etc.).
+-   `GET /api/v1/business`: Retrieve the detailed information for the authenticated user's business.
+-   `PUT /api/v1/business`: Update the business's information.
+-   `GET /api/v1/business/stats`: Get general statistics for the business (e.g., total sales, number of customers).
+-   `GET /api/v1/business/analytics`: Access advanced analytics with query parameters for date ranges and specific metrics.
+-   `GET /api/v1/business/reports`: Generate and retrieve pre-defined reports, such as daily sales or monthly financial summaries, in PDF or Excel format.

@@ -1,31 +1,30 @@
-# Users Service
+# Users & Auth Service
 
-The Users Service is responsible for managing all aspects of user accounts and authentication on the Contacto platform.
+The Users & Auth Service is responsible for managing all aspects of user accounts, authentication, and authorization on the Contacto platform. It handles user registration, login, API key management, and defining roles and permissions.
 
 ## Responsibilities
 
--   **User Registration**: Creating new user accounts, including password hashing and validation.
--   **Authentication**: Handling user login, issuing JSON Web Tokens (JWTs), and managing sessions.
--   **User Profiles**: Storing and managing user profile information, such as name, email, and contact details.
--   **Password Management**: Providing functionality for users to reset their passwords.
--   **Authorization**: Defining and managing user roles and permissions.
+-   **User Registration & Authentication**: Creating new user accounts, handling logins (JWT), and managing sessions.
+-   **API Key Management**: Generating, listing, and revoking API keys for programmatic access.
+-   **Authorization**: Defining and managing user roles and permissions for access control across all services.
+-   **Profile Management**: Storing and managing user profile information.
 
-## API Endpoints
+## API Endpoints (v1)
 
--   `POST /api/users/register`: Register a new user.
--   `POST /api/users/login`: Log in a user and get a JWT.
--   `GET /api/users/me`: Get the profile of the currently logged-in user.
--   `PUT /api/users/me`: Update the profile of the currently logged-in user.
--   `POST /api/users/forgot-password`: Initiate the password reset process.
--   `POST /api/users/reset-password`: Reset a user's password.
+### Authentication
+-   `POST /api/v1/auth/register`: Register a new user account.
+-   `POST /api/v1/auth/login`: Log in a user and receive a JSON Web Token (JWT).
+-   `POST /api/v1/auth/refresh`: Obtain a new JWT using a refresh token.
+-   `POST /api/v1/auth/logout`: Log out the current user.
+-   `GET /api/v1/auth/me`: Get the profile of the currently authenticated user.
 
-## Data Model (`users`)
+### API Keys
+-   `POST /api/v1/api-keys`: Create a new API key for a user.
+-   `GET /api/v1/api-keys`: List all API keys for the current user.
+-   `DELETE /api/v1/api-keys/{id}`: Revoke an API key.
 
--   `id` (SERIAL PRIMARY KEY)
--   `email` (VARCHAR, UNIQUE, NOT NULL)
--   `password` (VARCHAR, NOT NULL)
--   `full_name` (VARCHAR)
--   `phone_number` (VARCHAR)
--   `role` (VARCHAR, e.g., 'citizen', 'professional', 'admin')
--   `created_at` (TIMESTAMP)
--   `updated_at` (TIMESTAMP)
+### Security Features
+-   Rate limiting per user and per API key.
+-   IP whitelisting capabilities.
+-   CORS configuration for frontend applications.
+-   Webhook signature verification.

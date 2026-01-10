@@ -17,6 +17,11 @@ For a deep dive into the project's architecture, API guidelines, and deployment 
 -   **[Architecture Overview](docs/ARCHITECTURE.md)**: A high-level look at the technical architecture of the platform.
 -   **[API Guidelines](docs/API_GUIDELINES.md)**: The standards and conventions for building APIs for the platform.
 -   **[DevOps and Deployment](docs/DEVOPS.md)**: Information on our CI/CD pipeline, infrastructure, and deployment process.
+-   **[Legal Framework](docs/LEGAL_FRAMEWORK.md)**: Details on company registration, data protection, and other legal requirements in Algeria.
+-   **[Financials & Budget](docs/FINANCIALS.md)**: The detailed budget and funding strategy for Phase 1.
+-   **[Success Metrics & Risks](docs/SUCCESS_METRICS_AND_RISKS.md)**: Key Performance Indicators (KPIs) and risk assessment for Phase 1.
+-   **[Developer Experience](docs/DEVELOPER_EXPERIENCE.md)**: Guidelines for the API documentation, developer portal, and SDKs.
+-   **[Hardware Recommendations](docs/HARDWARE_RECOMMENDATIONS.md)**: Recommended POS hardware setups for merchants.
 
 ## 📁 Project Structure
 

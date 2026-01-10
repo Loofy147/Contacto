@@ -615,7 +615,7 @@ search_appearances INTEGER DEFAULT 0, -- ظهور في نتائج البحث
 search_clicks INTEGER DEFAULT 0, -- نقرات من نتائج البحث
 ctr DECIMAL(5, 2), -- Click-Through Rate
 
-UNIQUE KEY unique_professional_date (professional_id, date),
+UNIQUE (professional_id, date),
 INDEX idx_date (date)
 );
 
@@ -1078,3 +1078,21 @@ DevOps Stack:
 ├── GitHub (Primary)
 ├── Git Flow branching
 └── Semantic Versioning
+---
+
+## 💳 **PHASE 3: PAYMENT & IDENTITY VERIFICATION (ENHANCED)**
+### **الدفع الإلكتروني والتحقق من الهوية - نسخة محسّنة**
+
+This phase focuses on building a comprehensive, locally-compliant payment system, a professional KYC/AML process, and an integrated digital wallet. The ultimate goal is to obtain a financial license from the Bank of Algeria.
+
+For a deeply detailed breakdown of this phase, including the payment architecture, transaction lifecycle, fraud prevention systems, and KYC/AML procedures, please see the **[Phase 3: Payment & Identity Verification Document](PHASE_3_PAYMENT_SYSTEM.md)**.
+
+#### **🎯 Strategic Objectives**
+-   Establish a comprehensive local payment system as a reliable alternative to international solutions.
+-   Build a professional KYC/AML system to ensure legal compliance and build trust.
+-   Create an integrated digital wallet for P2P transfers and QR code payments.
+-   Begin the process of obtaining a financial license from the Bank of Algeria.
+
+#### **⏱️ Timeline**
+-   **Phase 3A: Development & Integration (Months 13-18)**
+-   **Phase 3B: Licensing & Compliance (Parallel, Months 13-24+)**
