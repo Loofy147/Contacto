@@ -189,27 +189,12 @@ This document outlines the legal and regulatory requirements for establishing an
 
 ## **Phase 3 - Legal & Compliance Requirements**
 
-### **1. Financial Licensing**
--   **Objective**: Obtain a financial license from the Bank of Algeria or partner with a licensed entity.
--   **Requirements**:
-    -   Significant capital (100M+ DZD for a full license).
-    -   A robust business plan, financial projections, and technical specifications.
-    -   Passing a rigorous due diligence process, including technical and financial audits.
+The introduction of financial services in Phase 3 brings a significant increase in legal and regulatory complexity, primarily governed by the Bank of Algeria and AML/CFT laws.
 
-### **2. Anti-Money Laundering (AML) & Counter-Terrorist Financing (CTF)**
--   **Law**: Full compliance with Law 05-01.
--   **Requirements**:
-    -   Implement a robust transaction monitoring system to detect suspicious activity.
-    -   Establish a process for filing Suspicious Activity Reports (SARs) with the CTRF.
-    -   Conduct Customer Due Diligence (CDD) and Enhanced Due Diligence (EDD) for high-risk customers.
-    -   Screen all users against national and international sanctions lists.
-    -   Maintain all records for a minimum of 10 years.
+-   **Financial Licensing**: This involves either securing a full Electronic Payment Institution (EPE) license, which requires a minimum of 100M DZD in capital and a 12-18 month application process, or partnering with an existing licensed institution.
+-   **AML/CFT Program**: A comprehensive Anti-Money Laundering and Counter-Terrorist Financing program must be implemented in accordance with Algerian Law 05-01 and FATF recommendations. This includes appointing a certified MLRO, conducting rigorous customer due diligence (CDD/EDD), monitoring transactions, and filing Suspicious Activity Reports (SARs) with the CTRF.
+-   **PCI-DSS Compliance**: To process card payments directly, the platform must achieve and maintain Level 1 PCI-DSS compliance, the highest level of card data security.
 
-### **3. PCI-DSS Compliance**
--   **Level**: Level 1 compliance is mandatory for processing card payments.
--   **Requirements**:
-    -   Implement tokenization to avoid storing raw card numbers.
-    -   Maintain a secure network with firewalls and intrusion detection systems.
-    -   Encrypt all cardholder data in transit and at rest.
-    -   Implement strict access control measures.
-    -   Regularly test security systems and processes (e.g., penetration testing).
+**For a complete and in-depth analysis of the licensing options, AML/CFT program requirements, and ongoing compliance obligations, please refer to the dedicated legal specification document for this phase:**
+
+➡️ **[./PHASE_3_LEGAL_REQUIREMENTS.md](./PHASE_3_LEGAL_REQUIREMENTS.md)**
