@@ -115,3 +115,18 @@ A robust identity verification system is the cornerstone of a secure and complia
 **For a complete and detailed breakdown of the entire identity verification architecture, verification levels, risk-scoring engine, and technology stack, please refer to the dedicated specification document:**
 
 ➡️ **[./PHASE_3_KYC_AML_SYSTEM.md](./PHASE_3_KYC_AML_SYSTEM.md)**
+
+---
+
+### **3.3 The Contacto Digital Wallet**
+
+A core component of the financial layer is the proprietary Contacto Digital Wallet. This secure, integrated e-wallet will serve as the primary hub for users and merchants to manage their funds within the Contacto ecosystem.
+
+-   **Key Features**: The wallet will support instant P2P transfers, in-store QR code payments, and seamless online checkouts. It will also serve as the primary mechanism for merchant payouts.
+-   **Funding**: Users can top-up their wallets via local cards (CIB/EDAHABIA), bank transfers, and other local mobile payment solutions.
+-   **Security**: The wallet is built with robust security features, including mandatory 2FA for sensitive transactions, biometric authentication, and a clear separation of customer funds in segregated bank accounts.
+-   **Integration**: It is designed to be the financial backbone of the platform, enabling a smooth, low-cost flow of funds between all participants.
+
+**For a complete and detailed breakdown of the wallet's architecture, features (including account structure, funding/withdrawal methods, security, and APIs), please refer to the dedicated specification document:**
+
+➡️ **[./PHASE_3_WALLET_SYSTEM.md](./PHASE_3_WALLET_SYSTEM.md)**

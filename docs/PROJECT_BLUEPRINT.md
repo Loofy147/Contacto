@@ -1087,8 +1087,9 @@ This phase focuses on building a comprehensive, locally-compliant payment system
 
 For a deeply detailed breakdown of this phase, please see the dedicated specification documents:
 
--   **[Phase 3: Payment & Identity Verification](PHASE_3_PAYMENT_SYSTEM.md)**: Details the payment gateway, e-wallet, transaction lifecycle, and fraud prevention systems.
--   **[Phase 3: Comprehensive KYC/AML System](PHASE_3_KYC_AML_SYSTEM.md)**: Provides a complete specification for the multi-tiered identity verification (KYC/KYB) and anti-money laundering (AML) processes.
+-   **[Phase 3: Payment & Identity Verification](PHASE_3_PAYMENT_SYSTEM.md)**: The main document covering the payment gateway, fraud prevention, and links to the other components.
+-   **[Phase 3: Comprehensive KYC/AML System](PHASE_3_KYC_AML_SYSTEM.md)**: A complete specification for the multi-tiered identity verification (KYC/KYB) and anti-money laundering (AML) program.
+-   **[Phase 3: Contacto Digital Wallet System](PHASE_3_WALLET_SYSTEM.md)**: A deep dive into the architecture, features, and security of the integrated e-wallet.
 
 #### **🎯 Strategic Objectives**
 -   Establish a comprehensive local payment system as a reliable alternative to international solutions.
