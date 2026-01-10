@@ -130,3 +130,16 @@ A core component of the financial layer is the proprietary Contacto Digital Wall
 **For a complete and detailed breakdown of the wallet's architecture, features (including account structure, funding/withdrawal methods, security, and APIs), please refer to the dedicated specification document:**
 
 ➡️ **[./PHASE_3_WALLET_SYSTEM.md](./PHASE_3_WALLET_SYSTEM.md)**
+
+---
+
+### **3.4 Legal & Regulatory Framework**
+
+Operating a financial service in Algeria requires strict adherence to a complex legal and regulatory framework. Phase 3 is contingent upon navigating these requirements successfully.
+
+-   **Licensing Strategy**: The primary goal is to obtain a full Electronic Payment Institution (EPE) license from the Bank of Algeria. The recommended strategy is to initially partner with an already licensed entity to accelerate time-to-market while simultaneously beginning the 12-18 month process of applying for our own license.
+-   **AML/CFT Compliance**: The entire system is designed to be compliant with Algerian Law 05-01 and the global FATF standards for anti-money laundering and counter-terrorist financing. This includes robust KYC/CDD procedures, transaction monitoring, and a formal process for filing Suspicious Activity Reports (SARs) with the CTRF.
+
+**For a complete and in-depth analysis of the licensing options, AML/CFT program requirements, and ongoing compliance obligations, please refer to the dedicated legal specification document:**
+
+➡️ **[./PHASE_3_LEGAL_REQUIREMENTS.md](./PHASE_3_LEGAL_REQUIREMENTS.md)**
