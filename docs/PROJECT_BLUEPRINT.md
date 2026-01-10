@@ -1085,7 +1085,10 @@ DevOps Stack:
 
 This phase focuses on building a comprehensive, locally-compliant payment system, a professional KYC/AML process, and an integrated digital wallet. The ultimate goal is to obtain a financial license from the Bank of Algeria.
 
-For a deeply detailed breakdown of this phase, including the payment architecture, transaction lifecycle, fraud prevention systems, and KYC/AML procedures, please see the **[Phase 3: Payment & Identity Verification Document](PHASE_3_PAYMENT_SYSTEM.md)**.
+For a deeply detailed breakdown of this phase, please see the dedicated specification documents:
+
+-   **[Phase 3: Payment & Identity Verification](PHASE_3_PAYMENT_SYSTEM.md)**: Details the payment gateway, e-wallet, transaction lifecycle, and fraud prevention systems.
+-   **[Phase 3: Comprehensive KYC/AML System](PHASE_3_KYC_AML_SYSTEM.md)**: Provides a complete specification for the multi-tiered identity verification (KYC/KYB) and anti-money laundering (AML) processes.
 
 #### **🎯 Strategic Objectives**
 -   Establish a comprehensive local payment system as a reliable alternative to international solutions.

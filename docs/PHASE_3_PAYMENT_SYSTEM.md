@@ -98,3 +98,20 @@ This is a multi-layered system designed to protect both customers and merchants.
     -   **Encryption**: All data is encrypted in transit (TLS 1.3) and at rest (AES-256).
     -   **Key Management**: Uses a Hardware Security Module (HSM) for managing encryption keys.
     -   **Application Security**: Follows best practices to prevent common vulnerabilities (XSS, CSRF, SQL Injection).
+
+---
+
+### **3.2 Identity Verification & Compliance (KYC/KYB/AML)**
+
+A robust identity verification system is the cornerstone of a secure and compliant payment platform. It is essential for preventing fraud, combating money laundering, and building trust with users, partners, and regulators. The system is designed with a tiered, risk-based approach.
+
+-   **Tiered Verification Levels**: The platform uses a multi-level system (Level 0 to Level 3) to progressively grant users more access and higher transaction limits as they provide more comprehensive identity information.
+    -   **Level 1 (Basic)**: For individual users, requiring ID document upload and a live selfie check.
+    -   **Level 2 (Enhanced)**: For merchants, requiring business registration documents, bank details, and beneficial ownership information.
+    -   **Level 3 (Institutional)**: For large corporations, requiring in-depth corporate documentation and enhanced due diligence.
+-   **Automated & Manual Processes**: The system relies heavily on automation (OCR, liveness detection, database checks) for speed and efficiency, while flagging high-risk or low-confidence cases for manual review by a dedicated compliance team.
+-   **Compliance**: The entire process is built to comply with Algerian and international AML/CTF regulations.
+
+**For a complete and detailed breakdown of the entire identity verification architecture, verification levels, risk-scoring engine, and technology stack, please refer to the dedicated specification document:**
+
+➡️ **[./PHASE_3_KYC_AML_SYSTEM.md](./PHASE_3_KYC_AML_SYSTEM.md)**
