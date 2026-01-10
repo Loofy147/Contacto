@@ -1,41 +1,48 @@
-# Contacto Platform
+# Contacto: The All-in-One Digital Ecosystem for Algerian Businesses
 
-[![CI/CD Status](https://github.com/your-repo/contacto/actions/workflows/main.yml/badge.svg)](https://github.com/your-repo/contacto/actions)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+**Contacto is a comprehensive platform designed to empower Algerian businesses and professionals with a suite of digital tools, including a professional directory, an API-first POS system, and a complete financial services layer.**
 
-**Contacto** is an all-in-one ecosystem for businesses and professionals in Algeria. This monorepo contains the source code for the entire platform, including the frontend web application, the backend microservices, and the mobile app.
+This repository contains the source code for the Contacto platform, which is currently undergoing a significant architectural migration to a state-of-the-art, event-driven microservices architecture. This strategic shift will ensure the platform is scalable, resilient, and secure, in full compliance with Algerian data sovereignty laws (Law 18-07) and international standards such as PCI-DSS.
 
-## 🚀 Vision
+## New Architecture Overview
 
-Our vision is to build the digital infrastructure for the Algerian economy, providing a single, trusted platform for every professional, merchant, and citizen.
+The platform is being re-architected into a distributed system of microservices, orchestrated via an API Gateway and communicating through an event bus (Kafka). This new architecture is designed for:
 
-## 📚 Documentation
+- **High Scalability:** Each service can be scaled independently to meet demand.
+- **Improved Resilience:** Failure in one service will not cascade to the entire system.
+- **Enhanced Security:** A defense-in-depth security model is being implemented at every layer.
+- **Technology Flexibility:** Each microservice can be developed and deployed with the best technology for the job.
 
-For a deep dive into the project's architecture, API guidelines, and deployment strategy, please refer to the comprehensive documentation in the `/docs` directory:
+For a detailed explanation of the new architecture, please see the [Technical Architecture Document](docs/architecture/technical_architecture.md).
 
--   **[Project Blueprint](docs/PROJECT_BLUEPRINT.md)**: The complete and detailed project plan, including the vision, mission, features, and technical specifications.
--   **[Architecture Overview](docs/ARCHITECTURE.md)**: A high-level look at the technical architecture of the platform.
--   **[API Guidelines](docs/API_GUIDELINES.md)**: The standards and conventions for building APIs for the platform.
--   **[DevOps and Deployment](docs/DEVOPS.md)**: Information on our CI/CD pipeline, infrastructure, and deployment process.
--   **[Legal Framework](docs/LEGAL_FRAMEWORK.md)**: Details on company registration, data protection, and other legal requirements in Algeria.
--   **[Financials & Budget](docs/FINANCIALS.md)**: The detailed budget and funding strategy for Phase 1.
--   **[Success Metrics & Risks](docs/SUCCESS_METRICS_AND_RISKS.md)**: Key Performance Indicators (KPIs) and risk assessment for Phase 1.
--   **[Developer Experience](docs/DEVELOPER_EXPERIENCE.md)**: Guidelines for the API documentation, developer portal, and SDKs.
--   **[Hardware Recommendations](docs/HARDWARE_RECOMMENDATIONS.md)**: Recommended POS hardware setups for merchants.
+## Repository Structure
 
-## 📁 Project Structure
+This repository is a monorepo, organized as follows:
 
-This repository is a monorepo containing the following packages:
+- **`backend/`**: Contains the source code for all back-end microservices and the API Gateway.
+  - **`backend/api-gateway/`**: The entry point for all API requests.
+  - **`backend/services/`**: Individual microservices, such as `identity`, `payments`, `professionals`, etc.
+- **`frontend/`**: The Next.js web application.
+- **`mobile/`**: The React Native mobile application for iOS and Android.
+- **`docs/`**: Contains all project documentation, including:
+  - **`docs/analysis/`**: Critical analysis of the project, including market research and risk assessment.
+  - **`docs/architecture/`**: Detailed technical architecture of the platform.
+  - **`docs/roadmap/`**: The product and technical roadmap.
 
--   **`/backend`**: The Node.js microservices that power the platform.
--   **`/frontend`**: The Next.js web application.
--   **`/mobile`**: The React Native (Expo) mobile app for Android and iOS.
--   **`/docs`**: All project-related documentation.
+## Project Roadmap
 
-## 🏁 Getting Started
+The project is being developed in four distinct phases over a 36-month timeline:
 
-Instructions for setting up a local development environment can be found in the `README.md` file of each package.
+1.  **Phase 1: Directory Platform (Months 1-6)**
+2.  **Phase 2: API POS Infrastructure (Months 7-12)**
+3.  **Phase 3: Financial Layer (Months 13-24)**
+4.  **Phase 4: Government Integration (Months 25-36)**
 
-## 🤝 Contributing
+For a detailed month-by-month breakdown of the roadmap, please see the [Project Roadmap Document](docs/roadmap/roadmap.md).
 
-We welcome contributions from the community! Please read our [contributing guidelines](CONTRIBUTING.md) to get started.
+## Getting Started
+
+*Coming soon: Instructions for setting up the development environment.*
+
+---
+*This project is being developed with a commitment to technical excellence, security, and compliance. For any questions, please refer to the detailed documentation in the `docs` directory.*
