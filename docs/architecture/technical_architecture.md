@@ -96,6 +96,15 @@ Smart technology choices that balance performance with budget constraints.
 
 ---
 
+## 💾 DATABASE ARCHITECTURE
+
+The definitive guide to our database schema, algorithms, and optimization strategies can be found in the following documents:
+
+- **[./database/contacto_database_schema.sql](./database/contacto_database_schema.sql):** The complete, production-ready SQL schema with detailed comments, indexing, and partitioning strategies.
+- **[./database/contacto_db_algorithms.md](./database/contacto_db_algorithms.md):** A comprehensive guide to the algorithms and query optimization techniques used in the Contacto platform.
+
+---
+
 ## 🔧 BACKEND ARCHITECTURE (Microservices)
 
 ### Core Services
