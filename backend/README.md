@@ -1,38 +1,28 @@
-# Contacto Backend
+# Contacto Backend - Microservices Architecture
 
-This directory contains all the backend services for the Contacto platform. It follows a microservices architecture, with each service being a separate, independently deployable application.
+This directory contains the source code for the entire backend of the Contacto platform. The backend is designed as a distributed system of microservices, following an event-driven architecture pattern. This approach ensures high scalability, resilience, and maintainability.
 
-## Architecture
+For a complete and detailed explanation of the architecture, including the event bus (Kafka), data models, and security patterns, please refer to the main **[Technical Architecture Document](../../docs/architecture/technical_architecture.md)**.
 
-The backend is built on an event-driven microservices architecture. Services communicate with each other asynchronously via an event bus (Apache Kafka), and an API Gateway (Kong) provides a single entry point for all client requests.
+## Directory Structure
 
-For a detailed explanation of the architecture, please see the [Technical Architecture document](../../docs/architecture/technical_architecture.md).
+The backend is organized into two primary components:
 
-## Services
+### 1. [`api-gateway/`](./api-gateway/)
 
-The following microservices are planned for the Contacto platform:
+The **API Gateway** is the single entry point for all incoming requests from client applications (web and mobile). Its primary responsibilities include:
 
-*   **API Gateway:** The single entry point for all client applications.
-*   **Users & Auth:** Manages user registration, authentication, and authorization.
-*   **Business/Professionals:** Handles professional profiles, service listings, and business analytics.
-*   **Payments Hub:** Orchestrates payments and manages transaction lifecycles.
-*   **Inventory:** Manages product catalogs, stock tracking, and supplier information.
-*   **Appointments:** Handles scheduling and management of appointments.
-*   **Reviews:** Manages user reviews and ratings.
-*   **Notifications:** Sends notifications to users via email, SMS, and push notifications.
-*   **And many more...** A complete list of planned services can be found in the `services` directory.
+- **Request Routing:** Directing incoming requests to the appropriate microservice.
+- **Authentication & Authorization:** Verifying JWTs and ensuring clients have the necessary permissions.
+- **Rate Limiting:** Protecting the system from abuse and ensuring fair usage.
+- **Load Balancing:** Distributing traffic across instances of the microservices.
+
+### 2. [`services/`](./services/)
+
+This directory contains the individual **microservices**. Each service is an independent application with its own database and a well-defined set of responsibilities. This separation of concerns allows for independent development, deployment, and scaling.
+
+Each subdirectory within `services/` represents a single microservice (e.g., `identity`, `payments`, `professionals`).
 
 ## Getting Started
 
-Currently, the backend is in a pre-implementation phase. The directory structure for each microservice has been scaffolded, but the code has not yet been written.
-
-Once the services are implemented, each will contain its own `package.json` file with instructions on how to build, test, and run the service.
-
-## Tech Stack
-
-*   **Language:** TypeScript
-*   **Framework:** Node.js with Express/Fastify
-*   **Database:** PostgreSQL
-*   **ORM:** Prisma
-*   **Event Bus:** Apache Kafka
-*   **API Gateway:** Kong
+*(Instructions for setting up the local development environment, running services, and testing will be added here.)*
