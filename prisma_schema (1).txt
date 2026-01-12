@@ -1,0 +1,451 @@
+// backend/services/identity/prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// USERS & AUTHENTICATION
+// ============================================================================
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  phone     String?  @unique
+  password  String
+  
+  // Profile
+  firstName String?  @map("first_name")
+  lastName  String?  @map("last_name")
+  avatarUrl String?  @map("avatar_url")
+  
+  // Role & Status
+  role      UserRole @default(USER)
+  status    UserStatus @default(ACTIVE)
+  
+  // Verification
+  emailVerified   Boolean   @default(false) @map("email_verified")
+  phoneVerified   Boolean   @default(false) @map("phone_verified")
+  emailVerifiedAt DateTime? @map("email_verified_at")
+  phoneVerifiedAt DateTime? @map("phone_verified_at")
+  
+  // Security
+  twoFactorEnabled Boolean  @default(false) @map("two_factor_enabled")
+  twoFactorSecret  String?  @map("two_factor_secret")
+  
+  // Activity
+  lastLoginAt DateTime? @map("last_login_at")
+  lastLoginIp String?   @map("last_login_ip")
+  loginCount  Int       @default(0) @map("login_count")
+  
+  // Timestamps
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+  
+  // Relations
+  professional    Professional?
+  sessions        Session[]
+  refreshTokens   RefreshToken[]
+  verificationTokens VerificationToken[]
+  passwordResets  PasswordReset[]
+  reviews         Review[]
+  appointments    Appointment[]
+  
+  @@index([email])
+  @@index([phone])
+  @@index([role])
+  @@index([status])
+  @@map("users")
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  token     String   @unique
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("sessions")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  token     String   @unique
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("refresh_tokens")
+}
+
+model VerificationToken {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  token     String   @unique
+  type      VerificationType
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([token])
+  @@map("verification_tokens")
+}
+
+model PasswordReset {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  token     String   @unique
+  expiresAt DateTime @map("expires_at")
+  usedAt    DateTime? @map("used_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([token])
+  @@map("password_resets")
+}
+
+// ============================================================================
+// CATEGORIES
+// ============================================================================
+
+model Category {
+  id          String   @id @default(uuid())
+  parentId    String?  @map("parent_id")
+  
+  // Multilingual
+  nameEn      String   @map("name_en")
+  nameAr      String   @map("name_ar")
+  nameFr      String   @map("name_fr")
+  slug        String   @unique
+  
+  // Display
+  icon        String?
+  color       String?
+  descriptionEn String? @map("description_en")
+  descriptionAr String? @map("description_ar")
+  descriptionFr String? @map("description_fr")
+  
+  // Hierarchy
+  level       Int      @default(0)
+  sortOrder   Int      @default(0) @map("sort_order")
+  
+  isActive    Boolean  @default(true) @map("is_active")
+  
+  // SEO
+  metaTitle       String? @map("meta_title")
+  metaDescription String? @map("meta_description")
+  
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  
+  // Relations
+  parent        Category?      @relation("CategoryToCategory", fields: [parentId], references: [id])
+  children      Category[]     @relation("CategoryToCategory")
+  professionals Professional[]
+  
+  @@index([parentId])
+  @@index([slug])
+  @@index([level, sortOrder])
+  @@map("categories")
+}
+
+// ============================================================================
+// PROFESSIONALS & BUSINESS PROFILES
+// ============================================================================
+
+model Professional {
+  id         String   @id @default(uuid())
+  userId     String   @unique @map("user_id")
+  categoryId String   @map("category_id")
+  
+  // Business Info
+  businessName   String  @map("business_name")
+  businessNameAr String? @map("business_name_ar")
+  slug           String  @unique
+  bio            String? @db.Text
+  bioAr          String? @map("bio_ar") @db.Text
+  tagline        String?
+  
+  // Media
+  logoUrl  String? @map("logo_url")
+  coverUrl String? @map("cover_url")
+  
+  // Contact
+  phone   String?
+  email   String?
+  website String?
+  
+  // Social
+  facebook  String?
+  instagram String?
+  linkedin  String?
+  twitter   String?
+  
+  // Location
+  address    String? @db.Text
+  addressAr  String? @map("address_ar") @db.Text
+  wilaya     String
+  commune    String?
+  postalCode String? @map("postal_code")
+  latitude   Float?
+  longitude  Float?
+  
+  // Business Details
+  yearsOfExperience Int?      @map("years_of_experience")
+  employeeCount     String?   @map("employee_count")
+  languages         String[]  @default(["ar", "fr"])
+  workingHours      Json?     @map("working_hours")
+  
+  // Verification
+  isVerified        Boolean   @default(false) @map("is_verified")
+  verifiedAt        DateTime? @map("verified_at")
+  verificationLevel Int       @default(0) @map("verification_level")
+  verificationMethod String?  @map("verification_method")
+  
+  // Subscription
+  subscriptionTier      String    @default("free") @map("subscription_tier")
+  subscriptionStartedAt DateTime? @map("subscription_started_at")
+  subscriptionExpiresAt DateTime? @map("subscription_expires_at")
+  
+  // Stats (Denormalized)
+  totalReviews      Int     @default(0) @map("total_reviews")
+  averageRating     Decimal @default(0) @db.Decimal(3, 2) @map("average_rating")
+  totalViews        Int     @default(0) @map("total_views")
+  totalPhoneClicks  Int     @default(0) @map("total_phone_clicks")
+  totalWebsiteClicks Int    @default(0) @map("total_website_clicks")
+  responseRate      Decimal? @db.Decimal(5, 2) @map("response_rate")
+  responseTimeMinutes Int?   @map("response_time_minutes")
+  
+  // Featured
+  featuredUntil DateTime? @map("featured_until")
+  
+  // SEO
+  metaTitle       String? @map("meta_title")
+  metaDescription String? @map("meta_description")
+  keywords        Json?
+  
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+  
+  // Relations
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category      Category      @relation(fields: [categoryId], references: [id])
+  services      Service[]
+  portfolio     PortfolioItem[]
+  reviews       Review[]
+  appointments  Appointment[]
+  
+  @@index([userId])
+  @@index([categoryId, wilaya])
+  @@index([averageRating, totalReviews])
+  @@index([isVerified])
+  @@index([subscriptionTier])
+  @@index([featuredUntil])
+  @@map("professionals")
+}
+
+model Service {
+  id             String  @id @default(uuid())
+  professionalId String  @map("professional_id")
+  
+  name        String
+  nameAr      String? @map("name_ar")
+  description String? @db.Text
+  descriptionAr String? @map("description_ar") @db.Text
+  
+  // Pricing
+  priceMin  Decimal? @db.Decimal(10, 2) @map("price_min")
+  priceMax  Decimal? @db.Decimal(10, 2) @map("price_max")
+  priceUnit String?  @map("price_unit")
+  
+  durationMinutes Int? @map("duration_minutes")
+  
+  imageUrl   String?  @map("image_url")
+  isFeatured Boolean  @default(false) @map("is_featured")
+  sortOrder  Int      @default(0) @map("sort_order")
+  
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  
+  professional Professional @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  
+  @@index([professionalId])
+  @@index([isFeatured, sortOrder])
+  @@map("services")
+}
+
+model PortfolioItem {
+  id             String @id @default(uuid())
+  professionalId String @map("professional_id")
+  
+  title       String?
+  titleAr     String? @map("title_ar")
+  description String? @db.Text
+  descriptionAr String? @map("description_ar") @db.Text
+  
+  mediaType    String  @map("media_type")
+  mediaUrl     String  @map("media_url")
+  thumbnailUrl String? @map("thumbnail_url")
+  
+  sortOrder Int @default(0) @map("sort_order")
+  
+  createdAt DateTime @default(now()) @map("created_at")
+  
+  professional Professional @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  
+  @@index([professionalId, sortOrder])
+  @@map("portfolio_items")
+}
+
+// ============================================================================
+// REVIEWS & RATINGS
+// ============================================================================
+
+model Review {
+  id             String @id @default(uuid())
+  professionalId String @map("professional_id")
+  userId         String @map("user_id")
+  
+  // Ratings
+  overallRating         Int     @map("overall_rating")
+  qualityRating         Int?    @map("quality_rating")
+  professionalismRating Int?    @map("professionalism_rating")
+  valueRating           Int?    @map("value_rating")
+  punctualityRating     Int?    @map("punctuality_rating")
+  communicationRating   Int?    @map("communication_rating")
+  wouldRecommend        Boolean? @map("would_recommend")
+  
+  // Content
+  reviewText String? @db.Text @map("review_text")
+  pros       String? @db.Text
+  cons       String? @db.Text
+  images     Json?
+  
+  // Verification
+  isVerified     Boolean   @default(false) @map("is_verified")
+  verifiedMethod String?   @map("verified_method")
+  verifiedAt     DateTime? @map("verified_at")
+  
+  // Fraud Detection
+  deviceFingerprint String? @map("device_fingerprint")
+  ipAddress         String? @map("ip_address")
+  userAgent         String? @db.Text @map("user_agent")
+  fraudScore        Decimal @default(0) @db.Decimal(5, 2) @map("fraud_score")
+  isFlagged         Boolean @default(false) @map("is_flagged")
+  flagReason        String? @db.Text @map("flag_reason")
+  
+  // Moderation
+  isApproved Boolean   @default(false) @map("is_approved")
+  approvedBy String?   @map("approved_by")
+  approvedAt DateTime? @map("approved_at")
+  
+  // Sentiment Analysis
+  sentimentScore Decimal? @db.Decimal(3, 2) @map("sentiment_score")
+  sentimentLabel String?  @map("sentiment_label")
+  
+  // Professional Response
+  professionalResponse String?   @db.Text @map("professional_response")
+  responseAt           DateTime? @map("response_at")
+  
+  // Community
+  helpfulCount    Int @default(0) @map("helpful_count")
+  notHelpfulCount Int @default(0) @map("not_helpful_count")
+  
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  
+  professional Professional @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, professionalId])
+  @@index([professionalId, isApproved, createdAt])
+  @@index([fraudScore, isFlagged])
+  @@index([isApproved])
+  @@map("reviews")
+}
+
+// ============================================================================
+// APPOINTMENTS
+// ============================================================================
+
+model Appointment {
+  id             String @id @default(uuid())
+  professionalId String @map("professional_id")
+  userId         String @map("user_id")
+  
+  // Appointment Details
+  scheduledAt DateTime  @map("scheduled_at")
+  duration    Int       // minutes
+  status      AppointmentStatus @default(PENDING)
+  
+  // Service Info
+  serviceName String? @map("service_name")
+  notes       String? @db.Text
+  
+  // Confirmation
+  confirmedAt DateTime? @map("confirmed_at")
+  cancelledAt DateTime? @map("cancelled_at")
+  cancelledBy String?   @map("cancelled_by")
+  cancelReason String?  @db.Text @map("cancel_reason")
+  
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  
+  professional Professional @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([professionalId, scheduledAt])
+  @@index([userId, scheduledAt])
+  @@index([status])
+  @@map("appointments")
+}
+
+// ============================================================================
+// ENUMS
+// ============================================================================
+
+enum UserRole {
+  USER
+  PROFESSIONAL
+  ADMIN
+  SUPPORT
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  BANNED
+  DELETED
+}
+
+enum VerificationType {
+  EMAIL
+  PHONE
+  PASSWORD_RESET
+}
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+  NO_SHOW
+}

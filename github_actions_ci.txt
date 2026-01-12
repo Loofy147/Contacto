@@ -1,0 +1,415 @@
+# .github/workflows/ci-cd.yml
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+env:
+  NODE_VERSION: '20'
+  PNPM_VERSION: '8'
+
+jobs:
+  # ============================================================================
+  # BACKEND TESTS
+  # ============================================================================
+  backend-test:
+    name: Backend Tests
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgis/postgis:16-3.4
+        env:
+          POSTGRES_DB: contacto_test
+          POSTGRES_USER: contacto
+          POSTGRES_PASSWORD: test_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    strategy:
+      matrix:
+        service:
+          - identity
+          - professionals
+          - notifications
+          - analytics
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        working-directory: ./backend/services/${{ matrix.service }}
+        run: pnpm install --frozen-lockfile
+
+      - name: Run Prisma migrations
+        working-directory: ./backend/services/${{ matrix.service }}
+        run: pnpm prisma migrate deploy
+        env:
+          DATABASE_URL: postgresql://contacto:test_password@localhost:5432/contacto_test
+
+      - name: Run linter
+        working-directory: ./backend/services/${{ matrix.service }}
+        run: pnpm lint
+
+      - name: Run type check
+        working-directory: ./backend/services/${{ matrix.service }}
+        run: pnpm type-check
+
+      - name: Run tests
+        working-directory: ./backend/services/${{ matrix.service }}
+        run: pnpm test:ci
+        env:
+          DATABASE_URL: postgresql://contacto:test_password@localhost:5432/contacto_test
+          REDIS_URL: redis://localhost:6379
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./backend/services/${{ matrix.service }}/coverage/coverage-final.json
+          flags: backend-${{ matrix.service }}
+
+  # ============================================================================
+  # FRONTEND TESTS
+  # ============================================================================
+  frontend-test:
+    name: Frontend Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Install dependencies
+        working-directory: ./frontend
+        run: pnpm install --frozen-lockfile
+
+      - name: Run linter
+        working-directory: ./frontend
+        run: pnpm lint
+
+      - name: Run type check
+        working-directory: ./frontend
+        run: pnpm type-check
+
+      - name: Run tests
+        working-directory: ./frontend
+        run: pnpm test:ci
+
+      - name: Build
+        working-directory: ./frontend
+        run: pnpm build
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./frontend/coverage/coverage-final.json
+          flags: frontend
+
+  # ============================================================================
+  # SECURITY SCANNING
+  # ============================================================================
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+      - name: Run Snyk security scan
+        uses: snyk/actions/node@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --severity-threshold=high
+
+  # ============================================================================
+  # BUILD DOCKER IMAGES
+  # ============================================================================
+  build-images:
+    name: Build Docker Images
+    runs-on: ubuntu-latest
+    needs: [backend-test, frontend-test]
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+
+    strategy:
+      matrix:
+        service:
+          - identity
+          - professionals
+          - notifications
+          - analytics
+          - frontend
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: contacto/${{ matrix.service }}
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix={{branch}}-
+            type=semver,pattern={{version}}
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./docker/Dockerfile.${{ matrix.service }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ============================================================================
+  # DEPLOY TO STAGING
+  # ============================================================================
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [build-images]
+    if: github.ref == 'refs/heads/develop'
+    environment:
+      name: staging
+      url: https://staging.contacto.dz
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-west-1
+
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v3
+
+      - name: Update kubeconfig
+        run: aws eks update-kubeconfig --name contacto-staging --region eu-west-1
+
+      - name: Deploy to Kubernetes
+        run: |
+          kubectl set image deployment/identity-service \
+            identity=contacto/identity:${{ github.sha }} \
+            --namespace=staging
+          
+          kubectl set image deployment/professionals-service \
+            professionals=contacto/professionals:${{ github.sha }} \
+            --namespace=staging
+          
+          kubectl set image deployment/frontend \
+            frontend=contacto/frontend:${{ github.sha }} \
+            --namespace=staging
+
+      - name: Wait for rollout
+        run: |
+          kubectl rollout status deployment/identity-service -n staging
+          kubectl rollout status deployment/professionals-service -n staging
+          kubectl rollout status deployment/frontend -n staging
+
+      - name: Run smoke tests
+        run: |
+          curl -f https://staging.contacto.dz/health || exit 1
+          curl -f https://staging-api.contacto.dz/health || exit 1
+
+  # ============================================================================
+  # DEPLOY TO PRODUCTION
+  # ============================================================================
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [build-images]
+    if: github.ref == 'refs/heads/main'
+    environment:
+      name: production
+      url: https://contacto.dz
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-west-1
+
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v3
+
+      - name: Update kubeconfig
+        run: aws eks update-kubeconfig --name contacto-production --region eu-west-1
+
+      - name: Blue-Green Deployment
+        run: |
+          # Deploy to green environment
+          kubectl apply -f k8s/green/ --namespace=production
+          
+          # Wait for green to be ready
+          kubectl rollout status deployment/identity-service-green -n production
+          kubectl rollout status deployment/professionals-service-green -n production
+          kubectl rollout status deployment/frontend-green -n production
+          
+          # Run health checks on green
+          kubectl run smoke-test --image=curlimages/curl:latest --rm -it --restart=Never \
+            --namespace=production \
+            -- curl -f http://frontend-green-service/health
+
+      - name: Switch traffic to green
+        run: |
+          # Update service selectors to point to green
+          kubectl patch service frontend-service -n production \
+            -p '{"spec":{"selector":{"version":"green"}}}'
+          
+          kubectl patch service api-service -n production \
+            -p '{"spec":{"selector":{"version":"green"}}}'
+
+      - name: Monitor for 5 minutes
+        run: |
+          sleep 300
+          
+          # Check error rates
+          ERROR_RATE=$(kubectl logs -l version=green -n production | grep ERROR | wc -l)
+          
+          if [ $ERROR_RATE -gt 10 ]; then
+            echo "High error rate detected, rolling back"
+            exit 1
+          fi
+
+      - name: Cleanup old blue deployment
+        run: kubectl delete -f k8s/blue/ --namespace=production
+
+      - name: Notify Slack
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          text: 'Production deployment completed successfully! 🚀'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+        if: always()
+
+  # ============================================================================
+  # MOBILE APP BUILD
+  # ============================================================================
+  mobile-build:
+    name: Build Mobile App
+    runs-on: macos-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Setup React Native
+        run: |
+          npm install -g expo-cli
+          cd mobile
+          npm install
+
+      - name: Build Android APK
+        run: |
+          cd mobile
+          expo build:android -t apk --non-interactive
+
+      - name: Upload Android artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: android-apk
+          path: mobile/build/*.apk
+
+      - name: Build iOS IPA
+        run: |
+          cd mobile
+          expo build:ios -t archive --non-interactive
+
+      - name: Upload iOS artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ios-ipa
+          path: mobile/build/*.ipa
