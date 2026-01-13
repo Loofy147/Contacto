@@ -1,0 +1,348 @@
+// Prisma Schema for CRM Service
+// Database: PostgreSQL 16+
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// ENUMS
+// ============================================
+
+enum ContactType {
+  LEAD          // Potential customer
+  CUSTOMER      // Active customer
+  PARTNER       // Business partner
+  VENDOR        // Supplier/vendor
+}
+
+enum ContactStatus {
+  ACTIVE
+  INACTIVE
+  BLOCKED
+}
+
+enum LeadSource {
+  WEBSITE
+  REFERRAL
+  DIRECTORY
+  SOCIAL_MEDIA
+  PAID_ADS
+  EVENT
+  COLD_CALL
+  OTHER
+}
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  QUALIFIED
+  PROPOSAL
+  NEGOTIATION
+  WON
+  LOST
+}
+
+enum DealStage {
+  PROSPECTING
+  QUALIFICATION
+  PROPOSAL
+  NEGOTIATION
+  CLOSED_WON
+  CLOSED_LOST
+}
+
+enum ActivityType {
+  CALL
+  EMAIL
+  MEETING
+  TASK
+  NOTE
+  SMS
+}
+
+enum ActivityStatus {
+  PENDING
+  COMPLETED
+  CANCELLED
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+// ============================================
+// CORE MODELS
+// ============================================
+
+model Contact {
+  id                String        @id @default(uuid()) @db.Uuid
+  professionalId    String        @db.Uuid // Owner of this contact
+
+  // Basic Information
+  firstName         String        @db.VarChar(100)
+  lastName          String        @db.VarChar(100)
+  fullName          String        @db.VarChar(200) // Computed field
+  email             String?       @db.VarChar(255)
+  phone             String?       @db.VarChar(20)
+  alternatePhone    String?       @db.VarChar(20)
+
+  // Business Information
+  company           String?       @db.VarChar(200)
+  jobTitle          String?       @db.VarChar(100)
+  industry          String?       @db.VarChar(100)
+
+  // Classification
+  type              ContactType   @default(LEAD)
+  status            ContactStatus @default(ACTIVE)
+  source            LeadSource?
+  tags              String[]      @default([])
+
+  // Address
+  address           String?       @db.Text
+  wilaya            String?       @db.VarChar(50)
+  commune           String?       @db.VarChar(100)
+  postalCode        String?       @db.VarChar(10)
+
+  // Social & Web
+  website           String?       @db.VarChar(255)
+  linkedinUrl       String?       @db.VarChar(255)
+  facebookUrl       String?       @db.VarChar(255)
+
+  // Engagement Metrics
+  leadScore         Int           @default(0) // 0-100
+  lifetimeValue     Decimal       @default(0) @db.Decimal(12, 2)
+  totalDeals        Int           @default(0)
+  totalRevenue      Decimal       @default(0) @db.Decimal(12, 2)
+  lastContactDate   DateTime?
+  nextFollowUpDate  DateTime?
+
+  // Custom Fields (JSONB for flexibility)
+  customFields      Json?         @db.JsonB
+
+  // Notes
+  notes             String?       @db.Text
+
+  // Metadata
+  createdAt         DateTime      @default(now()) @db.Timestamptz
+  updatedAt         DateTime      @updatedAt @db.Timestamptz
+  deletedAt         DateTime?     @db.Timestamptz
+
+  // Relationships
+  deals             Deal[]
+  activities        Activity[]
+  tasks             Task[]
+  emailCampaigns    ContactEmailCampaign[]
+
+  @@index([professionalId, status])
+  @@index([professionalId, type])
+  @@index([email])
+  @@index([phone])
+  @@index([leadScore])
+  @@index([nextFollowUpDate])
+  @@index([createdAt])
+  @@map("contacts")
+}
+
+model Deal {
+  id                String        @id @default(uuid()) @db.Uuid
+  professionalId    String        @db.Uuid
+  contactId         String        @db.Uuid
+
+  // Deal Information
+  title             String        @db.VarChar(200)
+  description       String?       @db.Text
+
+  // Financial
+  amount            Decimal       @db.Decimal(12, 2)
+  currency          String        @default("DZD") @db.VarChar(3)
+  probability       Int           @default(50) // 0-100
+  expectedRevenue   Decimal       @db.Decimal(12, 2) // amount * probability
+
+  // Status & Stage
+  stage             DealStage     @default(PROSPECTING)
+  priority          Priority      @default(MEDIUM)
+
+  // Timeline
+  expectedCloseDate DateTime?     @db.Date
+  actualCloseDate   DateTime?     @db.Date
+
+  // Tracking
+  lostReason        String?       @db.Text
+  winReason         String?       @db.Text
+
+  // Custom Fields
+  customFields      Json?         @db.JsonB
+
+  // Metadata
+  createdAt         DateTime      @default(now()) @db.Timestamptz
+  updatedAt         DateTime      @updatedAt @db.Timestamptz
+  deletedAt         DateTime?     @db.Timestamptz
+
+  // Relationships
+  contact           Contact       @relation(fields: [contactId], references: [id])
+  activities        Activity[]
+
+  @@index([professionalId, stage])
+  @@index([contactId])
+  @@index([expectedCloseDate])
+  @@index([stage])
+  @@index([createdAt])
+  @@map("deals")
+}
+
+model Activity {
+  id                String         @id @default(uuid()) @db.Uuid
+  professionalId    String         @db.Uuid
+  contactId         String?        @db.Uuid
+  dealId            String?        @db.Uuid
+
+  // Activity Details
+  type              ActivityType
+  subject           String         @db.VarChar(200)
+  description       String?        @db.Text
+
+  // Status & Priority
+  status            ActivityStatus @default(PENDING)
+  priority          Priority       @default(MEDIUM)
+
+  // Timing
+  scheduledAt       DateTime?      @db.Timestamptz
+  completedAt       DateTime?      @db.Timestamptz
+  duration          Int?           // Duration in minutes
+
+  // Outcome
+  outcome           String?        @db.Text
+
+  // Metadata
+  createdAt         DateTime       @default(now()) @db.Timestamptz
+  updatedAt         DateTime       @updatedAt @db.Timestamptz
+  deletedAt         DateTime?      @db.Timestamptz
+
+  // Relationships
+  contact           Contact?       @relation(fields: [contactId], references: [id])
+  deal              Deal?          @relation(fields: [dealId], references: [id])
+
+  @@index([professionalId, status])
+  @@index([contactId])
+  @@index([dealId])
+  @@index([scheduledAt])
+  @@index([type])
+  @@map("activities")
+}
+
+model Task {
+  id                String         @id @default(uuid()) @db.Uuid
+  professionalId    String         @db.Uuid
+  contactId         String?        @db.Uuid
+
+  // Task Details
+  title             String         @db.VarChar(200)
+  description       String?        @db.Text
+
+  // Status & Priority
+  status            ActivityStatus @default(PENDING)
+  priority          Priority       @default(MEDIUM)
+
+  // Timing
+  dueDate           DateTime?      @db.Date
+  completedAt       DateTime?      @db.Timestamptz
+
+  // Assignment
+  assignedTo        String?        @db.Uuid // Employee ID if multi-user
+
+  // Metadata
+  createdAt         DateTime       @default(now()) @db.Timestamptz
+  updatedAt         DateTime       @updatedAt @db.Timestamptz
+  deletedAt         DateTime?      @db.Timestamptz
+
+  // Relationships
+  contact           Contact?       @relation(fields: [contactId], references: [id])
+
+  @@index([professionalId, status])
+  @@index([contactId])
+  @@index([dueDate])
+  @@index([assignedTo])
+  @@map("tasks")
+}
+
+model EmailCampaign {
+  id                String         @id @default(uuid()) @db.Uuid
+  professionalId    String         @db.Uuid
+
+  // Campaign Details
+  name              String         @db.VarChar(200)
+  subject           String         @db.VarChar(200)
+  body              String         @db.Text
+
+  // Status
+  status            String         @default("DRAFT") @db.VarChar(20) // DRAFT, SCHEDULED, SENT
+
+  // Timing
+  scheduledAt       DateTime?      @db.Timestamptz
+  sentAt            DateTime?      @db.Timestamptz
+
+  // Stats
+  totalRecipients   Int            @default(0)
+  totalSent         Int            @default(0)
+  totalOpened       Int            @default(0)
+  totalClicked      Int            @default(0)
+  totalBounced      Int            @default(0)
+
+  // Metadata
+  createdAt         DateTime       @default(now()) @db.Timestamptz
+  updatedAt         DateTime       @updatedAt @db.Timestamptz
+  deletedAt         DateTime?      @db.Timestamptz
+
+  // Relationships
+  recipients        ContactEmailCampaign[]
+
+  @@index([professionalId, status])
+  @@index([scheduledAt])
+  @@map("email_campaigns")
+}
+
+model ContactEmailCampaign {
+  id                String         @id @default(uuid()) @db.Uuid
+  contactId         String         @db.Uuid
+  campaignId        String         @db.Uuid
+
+  // Delivery Status
+  sent              Boolean        @default(false)
+  sentAt            DateTime?      @db.Timestamptz
+
+  // Engagement
+  opened            Boolean        @default(false)
+  openedAt          DateTime?      @db.Timestamptz
+  clicked           Boolean        @default(false)
+  clickedAt         DateTime?      @db.Timestamptz
+  bounced           Boolean        @default(false)
+  bouncedAt         DateTime?      @db.Timestamptz
+
+  // Metadata
+  createdAt         DateTime       @default(now()) @db.Timestamptz
+
+  // Relationships
+  contact           Contact        @relation(fields: [contactId], references: [id])
+  campaign          EmailCampaign  @relation(fields: [campaignId], references: [id])
+
+  @@unique([contactId, campaignId])
+  @@index([campaignId])
+  @@map("contact_email_campaigns")
+}
+
+// ============================================
+// VIEWS & ANALYTICS
+// ============================================
+
+// Materialized view for pipeline analytics (created via migration)
+// CREATE MATERIALIZED VIEW pipeline_summary AS ...
+// This would be manually created in migrations

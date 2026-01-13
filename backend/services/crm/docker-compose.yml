@@ -1,0 +1,87 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: contacto-crm-db
+    environment:
+      POSTGRES_DB: contacto_crm
+      POSTGRES_USER: contacto
+      POSTGRES_PASSWORD: contacto_dev_password
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U contacto"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - contacto-network
+
+  # CRM Service
+  crm-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: contacto-crm-service
+    environment:
+      DATABASE_URL: "postgresql://contacto:contacto_dev_password@postgres:5432/contacto_crm?schema=public"
+      PORT: 3001
+      NODE_ENV: development
+      LOG_LEVEL: info
+      JWT_SECRET: dev-secret-change-in-production
+      ALLOWED_ORIGINS: "http://localhost:3000"
+    ports:
+      - "3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      # Mount source code for hot reload in development
+      - ./src:/app/src
+      - ./prisma:/app/prisma
+    networks:
+      - contacto-network
+    command: npm run dev
+
+  # Redis (for future caching)
+  redis:
+    image: redis:7-alpine
+    container_name: contacto-crm-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - contacto-network
+    command: redis-server --appendonly yes
+
+  # Prisma Studio (Database GUI)
+  prisma-studio:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: contacto-prisma-studio
+    environment:
+      DATABASE_URL: "postgresql://contacto:contacto_dev_password@postgres:5432/contacto_crm?schema=public"
+    ports:
+      - "5555:5555"
+    depends_on:
+      - postgres
+    networks:
+      - contacto-network
+    command: npx prisma studio --port 5555 --browser none
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  contacto-network:
+    driver: bridge
