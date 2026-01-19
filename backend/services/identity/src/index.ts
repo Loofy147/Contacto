@@ -126,7 +126,9 @@ class IdentityService {
 
   private async initializeRedis(): Promise<void> {
     try {
-      await redis.ping();
+      if (!redis.isOpen) {
+        await redis.connect();
+      }
       logger.info('✅ Redis connected');
     } catch (error) {
       logger.error('❌ Redis connection failed:', error);

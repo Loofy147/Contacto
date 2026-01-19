@@ -5,7 +5,7 @@ import { createServer } from 'http';
 import { config } from './config';
 import { logger } from './utils/logger';
 import { errorHandler } from './middleware/errorHandler';
-import { professionalRoutes } from './routes/professional.routes';
+import { professionalRoutes } from './routes/professionals.routes';
 import { prisma } from './lib/prisma';
 import { redis } from './lib/redis';
 import { kafka } from './lib/kafka';
@@ -32,7 +32,6 @@ class ProfessionalsService {
     this.app.get('/health', (req, res) => {
       res.json({ status: 'UP', service: 'professionals-service' });
     });
-
     this.app.use('/api/v1/professionals', professionalRoutes);
   }
 
@@ -45,15 +44,22 @@ class ProfessionalsService {
       await prisma.$connect();
       logger.info('✅ Database connected');
 
-      // Start HTTP server
+      if (!redis.isOpen) {
+        await redis.connect();
+        logger.info('✅ Redis connected');
+      }
+
+      await kafka.connect();
+      logger.info('✅ Kafka connected');
+
       this.server = createServer(this.app);
-      const port = config.port || 3001;
+      const port = config.port;
 
       this.server.listen(port, () => {
         logger.info(`🚀 Professionals Service started on port ${port}`);
       });
     } catch (error) {
-      logger.error('❌ Failed to start Professionals Service:', error);
+      logger.error(`❌ Failed to start Professionals Service:`, error);
       process.exit(1);
     }
   }

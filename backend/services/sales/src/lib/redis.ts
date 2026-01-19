@@ -9,6 +9,14 @@ export const redis = createClient({
 redis.on('error', (err) => logger.error('Redis Client Error', err));
 redis.on('connect', () => logger.info('Redis Client Connected'));
 
-// Auto-connect (v4 requires this)
-// Note: In some environments you might want to call .connect() elsewhere
-// but for simplicity we'll do it here or handle it in the main start()
+export const connectRedis = async () => {
+  if (!redis.isOpen) {
+    await redis.connect();
+  }
+};
+
+export const disconnectRedis = async () => {
+  if (redis.isOpen) {
+    await redis.quit();
+  }
+};

@@ -7,6 +7,7 @@ import { logger } from './utils/logger';
 import { errorHandler } from './middleware/errorHandler';
 import { inventoryRoutes } from './routes/inventory.routes';
 import { prisma } from './lib/prisma';
+import { redis } from './lib/redis';
 import { kafka } from './lib/kafka';
 
 class InventoryService {
@@ -24,6 +25,7 @@ class InventoryService {
     this.app.use(helmet());
     this.app.use(cors());
     this.app.use(express.json());
+    this.app.set('trust proxy', 1);
   }
 
   private configureRoutes(): void {
@@ -40,16 +42,24 @@ class InventoryService {
   public async start(): Promise<void> {
     try {
       await prisma.$connect();
+      logger.info('✅ Database connected');
+
+      if (!redis.isOpen) {
+        await redis.connect();
+        logger.info('✅ Redis connected');
+      }
+
       await kafka.connect();
-      logger.info('✅ Dependencies connected');
+      logger.info('✅ Kafka connected');
 
       this.server = createServer(this.app);
-      const port = config.port || 3005;
+      const port = config.port;
+
       this.server.listen(port, () => {
         logger.info(`🚀 Inventory Service started on port ${port}`);
       });
     } catch (error) {
-      logger.error('❌ Failed to start Inventory Service:', error);
+      logger.error(`❌ Failed to start Inventory Service:`, error);
       process.exit(1);
     }
   }

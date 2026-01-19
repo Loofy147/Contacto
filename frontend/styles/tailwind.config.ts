@@ -166,6 +166,7 @@ const config: Config = {
     }),
     require('@tailwindcss/typography'),
     require('@tailwindcss/aspect-ratio'),
+    require('tailwindcss-rtl'),
   ],
 };
 
