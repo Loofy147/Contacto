@@ -1,3 +1,4 @@
+import crypto from "crypto";
 // backend/services/professionals/src/controllers/professional.controller.ts
 import { Request, Response, NextFunction } from 'express';
 import { prisma } from '../lib/prisma';
@@ -165,7 +166,7 @@ export class ProfessionalController {
       }
 
       // Increment view count (async, don't wait)
-      this.incrementViews(professional.id).catch(err => 
+      this.incrementViews(professional.id, req.ip, req.headers['user-agent']).catch(err =>
         logger.error('Failed to increment views', { error: err, professionalId: professional.id })
       );
 
@@ -491,12 +492,31 @@ export class ProfessionalController {
     }
   }
 
-  private async incrementViews(professionalId: string): Promise<void> {
+  private async incrementViews(professionalId: string, ip?: string, userAgent?: string): Promise<void> {
+    // Update total count
     await prisma.professional.update({
       where: { id: professionalId },
       data: {
         totalViews: { increment: 1 },
       },
+    });
+
+    // Publish event for detailed analytics
+    await kafka.send({
+      topic: 'professional.events',
+      messages: [{
+        key: professionalId,
+        value: JSON.stringify({
+          eventType: 'PROFESSIONAL_VIEWED',
+          eventId: crypto.randomUUID(),
+          timestamp: new Date(),
+          data: {
+            professionalId,
+            ip,
+            userAgent
+          },
+        }),
+      }],
     });
 
     // Invalidate cache

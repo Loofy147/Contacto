@@ -1197,3 +1197,12 @@ app.listen(3000, () => {
   console.log('Employees & Settings Service running on port 3000');
 });
 */
+const app = express();
+app.use(express.json());
+app.use('/api/v1/employees', router);
+app.use(errorHandler);
+
+const port = process.env.PORT || 3009;
+app.listen(port, () => {
+  console.log(`Employees Service started on port ${port}`);
+});

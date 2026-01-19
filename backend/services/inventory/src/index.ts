@@ -1,23 +1,59 @@
-import express from 'express';
+import express, { Application } from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
+import { createServer } from 'http';
 import { config } from './config';
-import { errorHandler } from './middleware/errorHandler';
 import { logger } from './utils/logger';
+import { errorHandler } from './middleware/errorHandler';
+import { inventoryRoutes } from './routes/inventory.routes';
+import { prisma } from './lib/prisma';
+import { kafka } from './lib/kafka';
 
-const app = express();
+class InventoryService {
+  private app: Application;
+  private server: any;
 
-app.use(helmet());
-app.use(cors());
-app.use(express.json());
+  constructor() {
+    this.app = express();
+    this.configureMiddleware();
+    this.configureRoutes();
+    this.configureErrorHandling();
+  }
 
-app.get('/health', (req, res) => {
-  res.json({ status: 'UP', service: 'inventory-service' });
-});
+  private configureMiddleware(): void {
+    this.app.use(helmet());
+    this.app.use(cors());
+    this.app.use(express.json());
+  }
 
-app.use(errorHandler);
+  private configureRoutes(): void {
+    this.app.get('/health', (req, res) => {
+      res.json({ status: 'UP', service: 'inventory-service' });
+    });
+    this.app.use('/api/v1/inventory', inventoryRoutes);
+  }
 
-const port = config.port || 3000;
-app.listen(port, () => {
-  logger.info(`$SVC service started on port ${port}`);
-});
+  private configureErrorHandling(): void {
+    this.app.use(errorHandler);
+  }
+
+  public async start(): Promise<void> {
+    try {
+      await prisma.$connect();
+      await kafka.connect();
+      logger.info('✅ Dependencies connected');
+
+      this.server = createServer(this.app);
+      const port = config.port || 3005;
+      this.server.listen(port, () => {
+        logger.info(`🚀 Inventory Service started on port ${port}`);
+      });
+    } catch (error) {
+      logger.error('❌ Failed to start Inventory Service:', error);
+      process.exit(1);
+    }
+  }
+}
+
+const service = new InventoryService();
+service.start();
