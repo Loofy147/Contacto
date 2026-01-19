@@ -4,6 +4,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import speakeasy from 'speakeasy';
 import QRCode from 'qrcode';
+import crypto from 'crypto';
 import { prisma } from '../lib/prisma';
 import { redis } from '../lib/redis';
 import { kafka } from '../lib/kafka';
@@ -251,7 +252,7 @@ export class AuthController {
         const expiresIn = decoded.exp - Math.floor(Date.now() / 1000);
         
         if (expiresIn > 0) {
-          await redis.setex(`blacklist:${token}`, expiresIn, '1');
+          await redis.setEx(`blacklist:${token}`, expiresIn, '1');
         }
       }
 
@@ -546,7 +547,7 @@ export class AuthController {
       const qrCode = await QRCode.toDataURL(secret.otpauth_url!);
 
       // Store secret temporarily in Redis (not yet enabled)
-      await redis.setex(`2fa:setup:${userId}`, 600, secret.base32); // 10 minutes
+      await redis.setEx(`2fa:setup:${userId}`, 600, secret.base32); // 10 minutes
 
       res.json({
         success: true,

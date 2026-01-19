@@ -15,6 +15,7 @@ import { healthRoutes } from './routes/health.routes';
 import { prisma } from './lib/prisma';
 import { redis } from './lib/redis';
 import { kafka } from './lib/kafka';
+import { EachMessagePayload } from 'kafkajs';
 
 class IdentityService {
   private app: Application;
@@ -148,7 +149,7 @@ class IdentityService {
 
       // Start consuming messages
       await kafka.run({
-        eachMessage: async ({ topic, partition, message }) => {
+        eachMessage: async ({ topic, partition, message }: EachMessagePayload) => {
           logger.info('Received message:', {
             topic,
             partition,
