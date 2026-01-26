@@ -8,6 +8,7 @@ import pino from 'pino';
 import { ZodError } from 'zod';
 import routes from './routes';
 import { CRMError } from './types';
+import { sendError } from './utils/response';
 
 // Load environment variables
 config();
@@ -123,47 +124,28 @@ app.use(
 
     // Zod validation errors
     if (err instanceof ZodError) {
-      const { message, errors } = handleZodError(err);
-      return res.status(400).json({
-        error: 'ValidationError',
-        message,
-        errors,
-      });
+      const { message } = handleZodError(err);
+      return sendError(res, 'VALIDATION_ERROR', message, 400);
     }
 
     // Custom CRM errors
     if (err instanceof CRMError) {
-      return res.status(err.statusCode).json({
-        error: err.code,
-        message: err.message,
-        ...(err instanceof Error && 'errors' in err && { errors: (err as any).errors }),
-      });
+      return sendError(res, err.code, err.message, err.statusCode);
     }
 
     // Prisma errors
     if (err.constructor.name.includes('Prisma')) {
-      return res.status(400).json({
-        error: 'DatabaseError',
-        message: 'Database operation failed',
-        details: process.env.NODE_ENV === 'development' ? err.message : undefined,
-      });
+      return sendError(res, 'DATABASE_ERROR', 'Database operation failed', 400);
     }
 
     // Default error response
-    return res.status(500).json({
-      error: 'InternalServerError',
-      message: 'An unexpected error occurred',
-      details: process.env.NODE_ENV === 'development' ? err.message : undefined,
-    });
+    return sendError(res, 'INTERNAL_SERVER_ERROR', 'An unexpected error occurred', 500);
   }
 );
 
 // 404 handler
 app.use((req: Request, res: Response) => {
-  res.status(404).json({
-    error: 'NotFound',
-    message: `Route ${req.method} ${req.path} not found`,
-  });
+  return sendError(res, 'NOT_FOUND', `Route ${req.method} ${req.path} not found`, 404);
 });
 
 // ============================================

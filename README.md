@@ -1,48 +1,58 @@
-# Contacto: The All-in-One Digital Ecosystem for Algerian Businesses
+# Contacto: The All-in-One Digital Ecosystem for Algerian Businesses 🚀
 
-**Contacto is a comprehensive platform designed to empower Algerian businesses and professionals with a suite of digital tools, including a professional directory, an API-first POS system, and a complete financial services layer.**
+**Contacto is a comprehensive platform designed to empower Algerian businesses and professionals with a suite of digital tools, including a professional directory, an API-first CRM/POS system, and a complete financial services layer.**
 
-This repository contains the source code for the Contacto platform, which is currently undergoing a significant architectural migration to a state-of-the-art, event-driven microservices architecture. This strategic shift will ensure the platform is scalable, resilient, and secure, in full compliance with Algerian data sovereignty laws (Law 18-07) and international standards such as PCI-DSS.
+## 🎯 The Strategic Vision (7 Identities)
 
-## New Architecture Overview
+Contacto is built and optimized using the **7 Strategic Identities** framework, ensuring every line of code contributes to technical excellence and business value:
 
-The platform is being re-architected into a distributed system of microservices, orchestrated via an API Gateway and communicating through an event bus (Kafka). This new architecture is designed for:
+-   🔧 **Tuber (Data Layer):** Automated query monitoring and performance tuning.
+-   ⚡ **Bolt (Performance):** Aggressive multi-layer caching and low-latency execution.
+-   💰 **Midas (Business Value):** Feature gating and monetization-ready architecture.
+-   🔮 **Oracle (Architecture):** Event-driven microservices with robust decoupling via Kafka.
+-   🎨 **Pallette (UX/Response):** Standardized API patterns and inclusive frontend experiences.
+-   🛡️ **Sentinel (Security):** Defense-in-depth, strict validation, and proactive monitoring.
+-   🎯 **Sun Tzu (Strategy):** Alignment with the 36-month roadmap for market dominance.
 
-- **High Scalability:** Each service can be scaled independently to meet demand.
-- **Improved Resilience:** Failure in one service will not cascade to the entire system.
-- **Enhanced Security:** A defense-in-depth security model is being implemented at every layer.
-- **Technology Flexibility:** Each microservice can be developed and deployed with the best technology for the job.
+## 🏗️ Architecture Overview
 
-For a detailed explanation of the new architecture, please see the [Technical Architecture Document](docs/architecture/technical_architecture.md).
+The platform uses a distributed system of microservices, orchestrated via an API Gateway and communicating through an event bus (Kafka).
 
-## Repository Structure
+- **High Scalability:** Independent scaling for each service.
+- **Resilience:** Fault-tolerant, event-driven design.
+- **Compliance:** Full compliance with Algerian Law 18-07 (Data Sovereignty) and PCI-DSS.
 
-This repository is a monorepo, organized as follows:
+For details, see the [Technical Architecture Document](docs/architecture/technical_architecture.md).
 
-- **`backend/`**: Contains the source code for all back-end microservices and the API Gateway.
-  - **`backend/api-gateway/`**: The entry point for all API requests.
-  - **`backend/services/`**: Individual microservices, such as `identity`, `payments`, `professionals`, etc.
-- **`frontend/`**: The Next.js web application.
-- **`mobile/`**: The React Native mobile application for iOS and Android.
-- **`docs/`**: Contains all project documentation, including:
-  - **`docs/analysis/`**: Critical analysis of the project, including market research and risk assessment.
-  - **`docs/architecture/`**: Detailed technical architecture of the platform.
-  - **`docs/roadmap/`**: The product and technical roadmap.
+## 📁 Repository Structure
 
-## Project Roadmap
+- **`backend/`**: Back-end microservices and API Gateway.
+  - `identity`: Auth & User management.
+  - `professionals`: Professional profiles & search.
+  - `crm`: Customer Relationship Management.
+  - ... and more.
+- **`frontend/`**: Next.js 15 web application.
+- **`mobile/`**: React Native + Expo mobile application.
+- **`docs/`**: Comprehensive project documentation.
+  - `docs/identities/`: Strategic identity definitions and reports.
+  - `docs/roadmap/`: 36-month growth plan.
 
-The project is being developed in four distinct phases over a 36-month timeline:
+## 🚀 Project Roadmap
 
-1.  **Phase 1: Directory Platform (Months 1-6)**
-2.  **Phase 2: API POS Infrastructure (Months 7-12)**
-3.  **Phase 3: Financial Layer (Months 13-24)**
-4.  **Phase 4: Government Integration (Months 25-36)**
+1.  **Phase 1: Directory Platform (Months 1-6)** - Current Phase.
+2.  **Phase 2: CRM & POS Infrastructure (Months 7-12)**
+3.  **Phase 3: Financial Layer & Payments (Months 13-24)**
+4.  **Phase 4: Government & Ecosystem Integration (Months 25-36)**
 
-For a detailed month-by-month breakdown of the roadmap, please see the [Project Roadmap Document](docs/roadmap/roadmap.md).
+See the [Project Roadmap Document](docs/roadmap/roadmap.md) for details.
 
-## Getting Started
+## 🛠️ Development Standards
 
-*Coming soon: Instructions for setting up the development environment.*
+All services must implement:
+- Standardized `Prisma` client with slow-query logging.
+- Standardized `sendSuccess`/`sendError` API utilities.
+- Standardized `authenticate` and `authorize` (RBAC) middleware.
+- Redis-based caching for high-traffic read operations.
 
 ---
-*This project is being developed with a commitment to technical excellence, security, and compliance. For any questions, please refer to the detailed documentation in the `docs` directory.*
+*Contacto: Empowering Algeria's Digital Future.*

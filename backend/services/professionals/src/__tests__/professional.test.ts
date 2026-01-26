@@ -4,6 +4,13 @@ import { professionalRoutes } from '../routes/professional.routes';
 import { errorHandler } from '../middleware/errorHandler';
 import { prisma } from '../lib/prisma';
 
+jest.mock('../middleware/authenticate', () => ({
+  authenticate: (req: any, res: any, next: any) => {
+    req.user = { userId: 'user-123', email: 'test@example.com', role: 'USER' };
+    next();
+  },
+}));
+
 jest.mock('../lib/prisma', () => ({
   prisma: {
     professional: {
@@ -35,11 +42,7 @@ jest.mock('../lib/meilisearch', () => ({
 
 const app = express();
 app.use(express.json());
-// Mock user for authenticate middleware
-app.use((req: any, res, next) => {
-  req.user = { userId: 'user-123', email: 'test@example.com', role: 'USER' };
-  next();
-});
+
 app.use('/api/v1/professionals', professionalRoutes);
 app.use(errorHandler);
 
