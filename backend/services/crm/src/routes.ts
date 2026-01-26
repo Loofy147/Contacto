@@ -1,6 +1,7 @@
 import { Router, Request, Response, NextFunction } from 'express';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from './lib/prisma';
 import { ContactService } from './services/contact.service';
+import { authenticate } from './middleware/authenticate';
 import { DealService } from './services/deal.service';
 import { ActivityService, TaskService } from './services/activity.service';
 import {
@@ -20,7 +21,6 @@ import {
 import { ServiceContext } from './types';
 
 const router = Router();
-const prisma = new PrismaClient();
 
 // Services
 const contactService = new ContactService(prisma);
@@ -37,10 +37,9 @@ const taskService = new TaskService(prisma);
  * In production, this would validate JWT and extract user info
  */
 function getServiceContext(req: Request): ServiceContext {
-  // Mock context - In production, extract from JWT
   return {
     professionalId: req.headers['x-professional-id'] as string || 'prof-123',
-    userId: req.headers['x-user-id'] as string || 'user-123',
+    userId: req.user?.userId || 'user-123',
   };
 }
 
@@ -64,6 +63,7 @@ const asyncHandler = (
  */
 router.post(
   '/contacts',
+  authenticate,
   asyncHandler(async (req: Request, res: Response) => {
     const data = createContactSchema.parse(req.body);
     const context = getServiceContext(req);

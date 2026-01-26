@@ -7,6 +7,7 @@ import { meilisearch } from '../lib/meilisearch';
 import { kafka } from '../lib/kafka';
 import { AppError } from '../utils/errors';
 import { logger } from '../utils/logger';
+import { sendSuccess } from '../utils/response';
 import slugify from 'slugify';
 
 export class ProfessionalController {
@@ -113,10 +114,7 @@ export class ProfessionalController {
       
       if (cached) {
         logger.debug('Professional retrieved from cache', { id });
-        return res.json({
-          success: true,
-          data: { professional: JSON.parse(cached) },
-        });
+        return sendSuccess(res, { professional: JSON.parse(cached) }, 'Professional profile retrieved from cache');
       }
 
       // Fetch from database
@@ -171,12 +169,9 @@ export class ProfessionalController {
       );
 
       // Cache for 5 minutes
-      await redis.setex(cacheKey, 300, JSON.stringify(professional));
+      await redis.setEx(cacheKey, 300, JSON.stringify(professional));
 
-      res.json({
-        success: true,
-        data: { professional },
-      });
+      return sendSuccess(res, { professional }, 'Professional profile retrieved successfully');
     } catch (error) {
       next(error);
     }
@@ -246,7 +241,7 @@ export class ProfessionalController {
 
       // Maintain search result order
       const orderedProfessionals = professionalIds.map(id =>
-        professionals.find(p => p.id === id)
+        professionals.find((p: any) => p.id === id)
       ).filter(Boolean);
 
       res.json({
@@ -356,6 +351,13 @@ export class ProfessionalController {
         throw new AppError(400, 'MISSING_LOCATION', 'Latitude and longitude are required');
       }
 
+      // BOLT: Try cache for nearby search (60 seconds TTL)
+      const cacheKey = `nearby:${latitude}:${longitude}:${radius}:${limit}`;
+      const cached = await redis.get(cacheKey);
+      if (cached) {
+        return sendSuccess(res, { professionals: JSON.parse(cached) }, 'Nearby professionals retrieved from cache');
+      }
+
       // Use PostgreSQL with PostGIS for geographic queries
       const professionals = await prisma.$queryRaw`
         SELECT 
@@ -378,10 +380,10 @@ export class ProfessionalController {
         LIMIT ${Number(limit)}
       `;
 
-      res.json({
-        success: true,
-        data: { professionals },
-      });
+      // BOLT: Cache for 1 minute
+      await redis.setEx(cacheKey, 60, JSON.stringify(professionals));
+
+      return sendSuccess(res, { professionals }, 'Nearby professionals retrieved successfully');
     } catch (error) {
       next(error);
     }

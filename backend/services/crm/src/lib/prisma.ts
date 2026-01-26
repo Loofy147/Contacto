@@ -23,7 +23,6 @@ export const prisma = new PrismaClient({
 });
 
 // TUBER: Query Performance Monitoring
-// Log queries that take longer than 100ms
 (prisma as any).$on('query', (e: any) => {
   if (e.duration >= 100) {
     logger.warn('🐌 Slow Query Detected', {
