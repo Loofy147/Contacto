@@ -94,7 +94,7 @@ export default function RootLayout({
   const queryClient = getQueryClient();
 
   return (
-    <html lang="fr" suppressHydrationWarning>
+    <html lang="ar" dir="rtl" suppressHydrationWarning>
       <head>
         {/* Security headers via meta tags */}
         <meta httpEquiv="X-Content-Type-Options" content="nosniff" />

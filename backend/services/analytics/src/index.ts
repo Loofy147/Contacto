@@ -1,23 +1,69 @@
-import express from 'express';
+import express, { Application } from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
+import { createServer } from 'http';
 import { config } from './config';
-import { errorHandler } from './middleware/errorHandler';
 import { logger } from './utils/logger';
+import { errorHandler } from './middleware/errorHandler';
+import { analyticsRoutes } from './routes/analytics.routes';
+import { prisma } from './lib/prisma';
+import { redis } from './lib/redis';
+import { kafka } from './lib/kafka';
 
-const app = express();
+class AnalyticsService {
+  private app: Application;
+  private server: any;
 
-app.use(helmet());
-app.use(cors());
-app.use(express.json());
+  constructor() {
+    this.app = express();
+    this.configureMiddleware();
+    this.configureRoutes();
+    this.configureErrorHandling();
+  }
 
-app.get('/health', (req, res) => {
-  res.json({ status: 'UP', service: 'analytics-service' });
-});
+  private configureMiddleware(): void {
+    this.app.use(helmet());
+    this.app.use(cors());
+    this.app.use(express.json());
+    this.app.set('trust proxy', 1);
+  }
 
-app.use(errorHandler);
+  private configureRoutes(): void {
+    this.app.get('/health', (req, res) => {
+      res.json({ status: 'UP', service: 'analytics-service' });
+    });
+    this.app.use('/api/v1/analytics', analyticsRoutes);
+  }
 
-const port = config.port || 3000;
-app.listen(port, () => {
-  logger.info(`$SVC service started on port ${port}`);
-});
+  private configureErrorHandling(): void {
+    this.app.use(errorHandler);
+  }
+
+  public async start(): Promise<void> {
+    try {
+      await prisma.$connect();
+      logger.info('✅ Database connected');
+
+      if (!redis.isOpen) {
+        await redis.connect();
+        logger.info('✅ Redis connected');
+      }
+
+      await kafka.connect();
+      logger.info('✅ Kafka connected');
+
+      this.server = createServer(this.app);
+      const port = config.port;
+
+      this.server.listen(port, () => {
+        logger.info(`🚀 Analytics Service started on port ${port}`);
+      });
+    } catch (error) {
+      logger.error(`❌ Failed to start Analytics Service:`, error);
+      process.exit(1);
+    }
+  }
+}
+
+const service = new AnalyticsService();
+service.start();

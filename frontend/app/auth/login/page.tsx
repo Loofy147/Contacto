@@ -1,7 +1,5 @@
-// app/auth/login/page.tsx
 /**
- * Login page with form validation and error handling
- * RED TEAM: Test SQL injection, brute force, credential stuffing, timing attacks
+ * صفحة تسجيل الدخول مع التحقق من البيانات ومعالجة الأخطاء
  */
 
 'use client';
@@ -14,6 +12,8 @@ import { authSchemas } from '@/lib/validations/schemas';
 import { useUIStore } from '@/lib/store';
 import { ROUTES } from '@/lib/constants';
 import { Eye, EyeOff, AlertCircle, Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -35,7 +35,6 @@ export default function LoginPage() {
       ...prev,
       [name]: type === 'checkbox' ? checked : value,
     }));
-    // Clear error for this field
     if (errors[name]) {
       setErrors((prev) => {
         const newErrors = { ...prev };
@@ -49,13 +48,12 @@ export default function LoginPage() {
     e.preventDefault();
     setErrors({});
 
-    // Validate form data
     const result = authSchemas.login.safeParse(formData);
     if (!result.success) {
       const formattedErrors: Record<string, string> = {};
-      result.error.errors.forEach((err) => {
-        const path = err.path.join('.');
-        formattedErrors[path] = err.message;
+      result.error.issues.forEach((issue) => {
+        const path = issue.path.join('.');
+        formattedErrors[path] = issue.message;
       });
       setErrors(formattedErrors);
       return;
@@ -65,124 +63,89 @@ export default function LoginPage() {
 
     try {
       await login(formData);
-
       addNotification({
         type: 'success',
-        message: 'Login successful! Redirecting...',
+        message: 'تم تسجيل الدخول بنجاح! جاري التوجيه...',
       });
-
-      // Redirect to dashboard
       router.push(ROUTES.DASHBOARD_OVERVIEW);
     } catch (error: any) {
-      const errorMessage = error.message || 'Login failed. Please try again.';
-
-      setErrors({
-        general: errorMessage,
-      });
-
-      addNotification({
-        type: 'error',
-        message: errorMessage,
-      });
+      const errorMessage = error.message || 'فشل تسجيل الدخول. يرجى المحاولة مرة أخرى.';
+      setErrors({ general: errorMessage });
+      addNotification({ type: 'error', message: errorMessage });
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8 font-sans" dir="rtl">
       <div className="max-w-md w-full space-y-8">
-        {/* Header */}
         <div className="text-center">
           <Link href="/" className="text-3xl font-bold text-primary-600">
-            Contacto
+            كونتاكتو
           </Link>
           <h2 className="mt-6 text-3xl font-bold text-gray-900">
-            Sign in to your account
+            تسجيل الدخول إلى حسابك
           </h2>
           <p className="mt-2 text-sm text-gray-600">
-            Or{' '}
+            أو{' '}
             <Link
               href={ROUTES.REGISTER}
               className="font-medium text-primary-600 hover:text-primary-500"
             >
-              create a new account
+              إنشاء حساب جديد
             </Link>
           </p>
         </div>
 
-        {/* Form */}
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          {/* General error */}
           {errors.general && (
-            <div className="alert alert-error flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+            <div className="p-4 rounded-md bg-red-50 flex items-start gap-3 text-red-800">
+              <AlertCircle className="w-5 h-5 flex-shrink-0" />
               <p className="text-sm">{errors.general}</p>
             </div>
           )}
 
           <div className="space-y-4">
-            {/* Email field */}
-            <div>
-              <label htmlFor="email" className="label label-required">
-                Email address
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
+            <Input
+              label="البريد الإلكتروني"
+              id="email"
+              name="email"
+              type="email"
+              autoComplete="email"
+              required
+              value={formData.email}
+              onChange={handleChange}
+              error={errors.email}
+              placeholder="you@example.com"
+              disabled={isLoading}
+            />
+
+            <div className="relative">
+              <Input
+                label="كلمة المرور"
+                id="password"
+                name="password"
+                type={showPassword ? 'text' : 'password'}
+                autoComplete="current-password"
                 required
-                value={formData.email}
+                value={formData.password}
                 onChange={handleChange}
-                className={`input ${errors.email ? 'input-error' : ''}`}
-                placeholder="you@example.com"
+                error={errors.password}
+                placeholder="••••••••"
                 disabled={isLoading}
               />
-              {errors.email && (
-                <p className="mt-1 text-sm text-red-600">{errors.email}</p>
-              )}
-            </div>
-
-            {/* Password field */}
-            <div>
-              <label htmlFor="password" className="label label-required">
-                Password
-              </label>
-              <div className="relative">
-                <input
-                  id="password"
-                  name="password"
-                  type={showPassword ? 'text' : 'password'}
-                  autoComplete="current-password"
-                  required
-                  value={formData.password}
-                  onChange={handleChange}
-                  className={`input pr-10 ${errors.password ? 'input-error' : ''}`}
-                  placeholder="••••••••"
-                  disabled={isLoading}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                  tabIndex={-1}
-                  aria-label={showPassword ? 'Hide password' : 'Show password'}
-                >
-                  {showPassword ? (
-                    <EyeOff className="w-5 h-5" />
-                  ) : (
-                    <Eye className="w-5 h-5" />
-                  )}
-                </button>
-              </div>
-              {errors.password && (
-                <p className="mt-1 text-sm text-red-600">{errors.password}</p>
-              )}
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute left-3 top-[38px] text-gray-400 hover:text-gray-600"
+                tabIndex={-1}
+              >
+                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              </button>
             </div>
           </div>
 
-          {/* Remember me & Forgot password */}
           <div className="flex items-center justify-between">
             <div className="flex items-center">
               <input
@@ -194,65 +157,20 @@ export default function LoginPage() {
                 className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
                 disabled={isLoading}
               />
-              <label
-                htmlFor="rememberMe"
-                className="ml-2 block text-sm text-gray-900"
-              >
-                Remember me
+              <label htmlFor="rememberMe" className="mr-2 block text-sm text-gray-900">
+                تذكرني
               </label>
             </div>
 
-            <Link
-              href={ROUTES.FORGOT_PASSWORD}
-              className="text-sm font-medium text-primary-600 hover:text-primary-500"
-            >
-              Forgot password?
+            <Link href={ROUTES.FORGOT_PASSWORD} className="text-sm font-medium text-primary-600 hover:text-primary-500">
+              نسيت كلمة المرور؟
             </Link>
           </div>
 
-          {/* Submit button */}
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="btn btn-primary w-full"
-          >
-            {isLoading ? (
-              <>
-                <Loader2 className="w-5 h-5 animate-spin" />
-                Signing in...
-              </>
-            ) : (
-              'Sign in'
-            )}
-          </button>
+          <Button type="submit" className="w-full" isLoading={isLoading}>
+            تسجيل الدخول
+          </Button>
         </form>
-
-        {/* Additional links */}
-        <div className="text-center">
-          <p className="text-sm text-gray-600">
-            Don't have an account?{' '}
-            <Link
-              href={ROUTES.REGISTER}
-              className="font-medium text-primary-600 hover:text-primary-500"
-            >
-              Sign up for free
-            </Link>
-          </p>
-        </div>
-
-        {/* Footer */}
-        <div className="mt-8 text-center text-xs text-gray-500">
-          <p>
-            By signing in, you agree to our{' '}
-            <Link href="/terms" className="underline hover:text-gray-700">
-              Terms of Service
-            </Link>{' '}
-            and{' '}
-            <Link href="/privacy" className="underline hover:text-gray-700">
-              Privacy Policy
-            </Link>
-          </p>
-        </div>
       </div>
     </div>
   );

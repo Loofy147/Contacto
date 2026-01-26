@@ -9,7 +9,7 @@ dotenv.config();
 const envSchema = z.object({
   // Application
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
-  PORT: z.string().transform(Number).default('3000'),
+  PORT: z.string().transform(Number).default('3006'),
   API_URL: z.string().url().default('http://localhost:3000'),
 
   // Database
@@ -24,7 +24,7 @@ const envSchema = z.object({
 
   // Kafka
   KAFKA_BROKERS: z.string().min(1),
-  KAFKA_CLIENT_ID: z.string().default('contacto_identity'),
+  KAFKA_CLIENT_ID: z.string().default('contacto_payment'),
   KAFKA_GROUP_ID: z.string().default('identity_consumer_group'),
   KAFKA_TOPIC_USER_EVENTS: z.string().default('user.events'),
 

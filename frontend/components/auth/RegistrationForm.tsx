@@ -8,7 +8,9 @@ import { useAuth } from '@/hooks';
 import { authSchemas } from '@/lib/validations/schemas';
 import { useUIStore } from '@/lib/store';
 import { ROUTES } from '@/lib/constants';
-import { Eye, EyeOff, AlertCircle, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, AlertCircle } from 'lucide-react';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
 
 export default function RegistrationForm() {
   const router = useRouter();
@@ -16,10 +18,12 @@ export default function RegistrationForm() {
   const { addNotification } = useUIStore();
 
   const [formData, setFormData] = useState({
-    fullName: '',
+    firstName: '',
+    lastName: '',
     email: '',
     password: '',
     confirmPassword: '',
+    acceptTerms: true,
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
@@ -32,7 +36,6 @@ export default function RegistrationForm() {
       ...prev,
       [name]: value,
     }));
-    // Clear error for this field
     if (errors[name]) {
       setErrors((prev) => {
         const newErrors = { ...prev };
@@ -46,13 +49,12 @@ export default function RegistrationForm() {
     e.preventDefault();
     setErrors({});
 
-    // Validate form data
     const result = authSchemas.register.safeParse(formData);
     if (!result.success) {
       const formattedErrors: Record<string, string> = {};
-      result.error.errors.forEach((err) => {
-        const path = err.path.join('.');
-        formattedErrors[path] = err.message;
+      result.error.issues.forEach((issue) => {
+        const path = issue.path.join('.');
+        formattedErrors[path] = issue.message;
       });
       setErrors(formattedErrors);
       return;
@@ -62,175 +64,123 @@ export default function RegistrationForm() {
 
     try {
       await register(formData);
-
       addNotification({
         type: 'success',
-        message: 'Registration successful! Please check your email to verify your account.',
+        message: 'تم إنشاء الحساب بنجاح! يرجى التحقق من بريدك الإلكتروني لتفعيل الحساب.',
       });
-
-      // Redirect to login page
       router.push(ROUTES.LOGIN);
     } catch (error: any) {
-      const errorMessage = error.message || 'Registration failed. Please try again.';
-
-      setErrors({
-        general: errorMessage,
-      });
-
-      addNotification({
-        type: 'error',
-        message: errorMessage,
-      });
+      const errorMessage = error.message || 'فشل إنشاء الحساب. يرجى المحاولة مرة أخرى.';
+      setErrors({ general: errorMessage });
+      addNotification({ type: 'error', message: errorMessage });
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-      {/* General error */}
+    <form className="mt-8 space-y-6" onSubmit={handleSubmit} dir="rtl">
       {errors.general && (
-        <div className="alert alert-error flex items-start gap-3">
-          <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+        <div className="p-4 rounded-md bg-red-50 flex items-start gap-3 text-red-800">
+          <AlertCircle className="w-5 h-5 flex-shrink-0" />
           <p className="text-sm">{errors.general}</p>
         </div>
       )}
 
       <div className="space-y-4">
-        {/* Full Name field */}
-        <div>
-          <label htmlFor="fullName" className="label label-required">
-            Full Name
-          </label>
-          <input
-            id="fullName"
-            name="fullName"
+        <div className="grid grid-cols-2 gap-4">
+          <Input
+            label="الاسم الشخصي"
+            id="firstName"
+            name="firstName"
             type="text"
-            autoComplete="name"
             required
-            value={formData.fullName}
+            value={formData.firstName}
             onChange={handleChange}
-            className={`input ${errors.fullName ? 'input-error' : ''}`}
-            placeholder="John Doe"
+            error={errors.firstName}
+            placeholder="فلان"
             disabled={isLoading}
           />
-          {errors.fullName && (
-            <p className="mt-1 text-sm text-red-600">{errors.fullName}</p>
-          )}
-        </div>
-
-        {/* Email field */}
-        <div>
-          <label htmlFor="email" className="label label-required">
-            Email address
-          </label>
-          <input
-            id="email"
-            name="email"
-            type="email"
-            autoComplete="email"
+          <Input
+            label="اللقب"
+            id="lastName"
+            name="lastName"
+            type="text"
             required
-            value={formData.email}
+            value={formData.lastName}
             onChange={handleChange}
-            className={`input ${errors.email ? 'input-error' : ''}`}
-            placeholder="you@example.com"
+            error={errors.lastName}
+            placeholder="بن فلان"
             disabled={isLoading}
           />
-          {errors.email && (
-            <p className="mt-1 text-sm text-red-600">{errors.email}</p>
-          )}
         </div>
 
-        {/* Password field */}
-        <div>
-          <label htmlFor="password" className="label label-required">
-            Password
-          </label>
-          <div className="relative">
-            <input
-              id="password"
-              name="password"
-              type={showPassword ? 'text' : 'password'}
-              autoComplete="new-password"
-              required
-              value={formData.password}
-              onChange={handleChange}
-              className={`input pr-10 ${errors.password ? 'input-error' : ''}`}
-              placeholder="••••••••"
-              disabled={isLoading}
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-              tabIndex={-1}
-              aria-label={showPassword ? 'Hide password' : 'Show password'}
-            >
-              {showPassword ? (
-                <EyeOff className="w-5 h-5" />
-              ) : (
-                <Eye className="w-5 h-5" />
-              )}
-            </button>
-          </div>
-          {errors.password && (
-            <p className="mt-1 text-sm text-red-600">{errors.password}</p>
-          )}
+        <Input
+          label="البريد الإلكتروني"
+          id="email"
+          name="email"
+          type="email"
+          autoComplete="email"
+          required
+          value={formData.email}
+          onChange={handleChange}
+          error={errors.email}
+          placeholder="you@example.com"
+          disabled={isLoading}
+        />
+
+        <div className="relative">
+          <Input
+            label="كلمة المرور"
+            id="password"
+            name="password"
+            type={showPassword ? 'text' : 'password'}
+            autoComplete="new-password"
+            required
+            value={formData.password}
+            onChange={handleChange}
+            error={errors.password}
+            placeholder="••••••••"
+            disabled={isLoading}
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute left-3 top-[38px] text-gray-400 hover:text-gray-600"
+            tabIndex={-1}
+          >
+            {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+          </button>
         </div>
 
-        {/* Confirm Password field */}
-        <div>
-          <label htmlFor="confirmPassword" className="label label-required">
-            Confirm Password
-          </label>
-          <div className="relative">
-            <input
-              id="confirmPassword"
-              name="confirmPassword"
-              type={showConfirmPassword ? 'text' : 'password'}
-              autoComplete="new-password"
-              required
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              className={`input pr-10 ${errors.confirmPassword ? 'input-error' : ''}`}
-              placeholder="••••••••"
-              disabled={isLoading}
-            />
-            <button
-              type="button"
-              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-              tabIndex={-1}
-              aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
-            >
-              {showConfirmPassword ? (
-                <EyeOff className="w-5 h-5" />
-              ) : (
-                <Eye className="w-5 h-5" />
-              )}
-            </button>
-          </div>
-          {errors.confirmPassword && (
-            <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>
-          )}
+        <div className="relative">
+          <Input
+            label="تأكيد كلمة المرور"
+            id="confirmPassword"
+            name="confirmPassword"
+            type={showConfirmPassword ? 'text' : 'password'}
+            autoComplete="new-password"
+            required
+            value={formData.confirmPassword}
+            onChange={handleChange}
+            error={errors.confirmPassword}
+            placeholder="••••••••"
+            disabled={isLoading}
+          />
+          <button
+            type="button"
+            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+            className="absolute left-3 top-[38px] text-gray-400 hover:text-gray-600"
+            tabIndex={-1}
+          >
+            {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+          </button>
         </div>
       </div>
 
-      {/* Submit button */}
-      <button
-        type="submit"
-        disabled={isLoading}
-        className="btn btn-primary w-full"
-      >
-        {isLoading ? (
-          <>
-            <Loader2 className="w-5 h-5 animate-spin" />
-            Creating account...
-          </>
-        ) : (
-          'Create account'
-        )}
-      </button>
+      <Button type="submit" className="w-full" isLoading={isLoading}>
+        إنشاء حساب
+      </Button>
     </form>
   );
 }
