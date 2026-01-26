@@ -661,7 +661,19 @@ export class AuthController {
   getCurrentUser = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const userId = req.user!.userId;
+      const cacheKey = `user:profile:${userId}`;
 
+      // BOLT: Try cache first
+      const cachedUser = await redis.get(cacheKey);
+      if (cachedUser) {
+        logger.debug('User profile cache hit', { userId });
+        return res.json({
+          success: true,
+          data: { user: JSON.parse(cachedUser) },
+        });
+      }
+
+      logger.debug('User profile cache miss', { userId });
       const user = await prisma.user.findUnique({
         where: { id: userId },
         select: {
@@ -683,6 +695,9 @@ export class AuthController {
       if (!user) {
         throw new AppError(404, 'USER_NOT_FOUND', 'User not found');
       }
+
+      // BOLT: Cache for 5 minutes
+      await redis.setEx(cacheKey, 300, JSON.stringify(user));
 
       res.json({
         success: true,
