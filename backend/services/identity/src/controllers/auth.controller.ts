@@ -14,6 +14,7 @@ import { logger } from '../utils/logger';
 import { EmailService } from '../services/email.service';
 import { generateToken, generateRefreshToken, verifyToken } from '../utils/jwt';
 import { hashPassword, comparePassword } from '../utils/password';
+import { sendSuccess } from '../utils/response';
 
 export class AuthController {
   private emailService: EmailService;
@@ -667,10 +668,8 @@ export class AuthController {
       const cachedUser = await redis.get(cacheKey);
       if (cachedUser) {
         logger.debug('User profile cache hit', { userId });
-        return res.json({
-          success: true,
-          data: { user: JSON.parse(cachedUser) },
-        });
+        // PALLETTE: Standardized Success Response
+        return sendSuccess(res, { user: JSON.parse(cachedUser) }, 'User profile retrieved from cache');
       }
 
       logger.debug('User profile cache miss', { userId });
@@ -699,10 +698,8 @@ export class AuthController {
       // BOLT: Cache for 5 minutes
       await redis.setEx(cacheKey, 300, JSON.stringify(user));
 
-      res.json({
-        success: true,
-        data: { user },
-      });
+      // PALLETTE: Standardized Success Response
+      return sendSuccess(res, { user }, 'User profile retrieved successfully');
     } catch (error) {
       next(error);
     }

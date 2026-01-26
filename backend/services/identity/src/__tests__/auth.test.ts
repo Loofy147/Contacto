@@ -112,6 +112,7 @@ describe('Auth Routes', () => {
 
       expect(res.status).toBe(200);
       expect(res.body.data.user).toEqual(mockUser);
+      expect(res.body.message).toBe('User profile retrieved from cache');
       expect(redis.get).toHaveBeenCalledWith('blacklist:mock-token');
       expect(redis.get).toHaveBeenCalledWith('user:profile:user-123');
       expect(prisma.user.findUnique).not.toHaveBeenCalled();
@@ -129,6 +130,7 @@ describe('Auth Routes', () => {
 
       expect(res.status).toBe(200);
       expect(res.body.data.user).toEqual(mockUser);
+      expect(res.body.message).toBe('User profile retrieved successfully');
       expect(redis.get).toHaveBeenCalledWith('user:profile:user-123');
       expect(prisma.user.findUnique).toHaveBeenCalled();
       expect(redis.setEx).toHaveBeenCalledWith('user:profile:user-123', 300, JSON.stringify(mockUser));
