@@ -14,6 +14,7 @@ import { logger } from '../utils/logger';
 import { EmailService } from '../services/email.service';
 import { generateToken, generateRefreshToken, verifyToken } from '../utils/jwt';
 import { hashPassword, comparePassword } from '../utils/password';
+import { sendSuccess } from '../utils/response';
 
 export class AuthController {
   private emailService: EmailService;
@@ -661,7 +662,17 @@ export class AuthController {
   getCurrentUser = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const userId = req.user!.userId;
+      const cacheKey = `user:profile:${userId}`;
 
+      // BOLT: Try cache first
+      const cachedUser = await redis.get(cacheKey);
+      if (cachedUser) {
+        logger.debug('User profile cache hit', { userId });
+        // PALLETTE: Standardized Success Response
+        return sendSuccess(res, { user: JSON.parse(cachedUser) }, 'User profile retrieved from cache');
+      }
+
+      logger.debug('User profile cache miss', { userId });
       const user = await prisma.user.findUnique({
         where: { id: userId },
         select: {
@@ -684,10 +695,11 @@ export class AuthController {
         throw new AppError(404, 'USER_NOT_FOUND', 'User not found');
       }
 
-      res.json({
-        success: true,
-        data: { user },
-      });
+      // BOLT: Cache for 5 minutes
+      await redis.setEx(cacheKey, 300, JSON.stringify(user));
+
+      // PALLETTE: Standardized Success Response
+      return sendSuccess(res, { user }, 'User profile retrieved successfully');
     } catch (error) {
       next(error);
     }

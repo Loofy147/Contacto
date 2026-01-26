@@ -1,29 +1,71 @@
-# Identity Service
+# Identity Service 🚀
 
 ## Overview
 
-This directory contains the source code for the **Identity Service**.
+The **Identity Service** is the cornerstone of the Contacto platform, responsible for user authentication, authorization, and lifecycle management. It is designed for high performance, security, and scalability.
 
-The primary responsibility of this service is to manage user authentication, authorization, and core user profiles.
+## 🚀 Strategic Optimizations (Applied January 2026)
 
-For a complete overview of how this service fits into the larger system, please see the main **[Technical Architecture Document](../../../docs/architecture/technical_architecture.md)**.
+This service has been optimized by the **Contacto Strategic Identities**:
+
+-   🔧 **Tuber (Data Layer):** Implemented Prisma query performance monitoring. Slow queries (>100ms) are automatically logged for optimization.
+-   ⚡ **Bolt (Performance):** Integrated Redis-based caching for high-frequency endpoints like `/users/me`. Expecting 30-50% reduction in database load.
+-   🛡️ **Sentinel (Security):** Enhanced JWT verification with token blacklisting, stricter error handling, and security event logging.
+-   🔮 **Oracle (Architecture):** Robust event-driven integration via Kafka for `USER_REGISTERED`, `USER_LOGGED_IN`, and `EMAIL_VERIFIED` events.
 
 ## Core Responsibilities
 
--   User registration and onboarding.
--   Handling user login and issuing JSON Web Tokens (JWTs).
--   Password management (hashing, reset flows).
--   Managing user profile information (name, contact details).
--   Enforcing authentication policies.
+-   **Authentication:** Registration, Login (JWT + Refresh Tokens), 2FA (TOTP).
+-   **Security:** Password hashing (bcrypt), Token blacklisting (Redis), Rate limiting.
+-   **Lifecycle:** Email verification, Password reset, Session management.
+-   **Profile:** Core user profile management and caching.
 
-## API Endpoints
+## Tech Stack
 
-*(A brief description of the main API endpoints (e.g., `/auth/register`, `/auth/login`) will be added here, along with a link to the full OpenAPI/Swagger documentation for this service.)*
+-   **Runtime:** Node.js + TypeScript
+-   **Framework:** Express.js
+-   **ORM:** Prisma (PostgreSQL)
+-   **Cache:** Redis
+-   **Events:** Kafka
+-   **Security:** Helmet, CORS, Express-Rate-Limit, Speakeasy (2FA)
 
-## Data Model
+## API Endpoints (v1)
 
-*(A brief overview of the primary data entities (e.g., `User`, `Credential`) managed by this service will be added here.)*
+### Auth
+- `POST /api/v1/auth/register` - New user registration
+- `POST /api/v1/auth/login` - User authentication
+- `POST /api/v1/auth/logout` - Invalidate session & blacklist token
+- `POST /api/v1/auth/refresh` - Rotate access/refresh tokens
+- `POST /api/v1/auth/forgot-password` - Initiate reset flow
+- `POST /api/v1/auth/reset-password` - Complete reset flow
+- `POST /api/v1/auth/verify-email` - Confirm email address
 
-## Events
+### 2FA
+- `POST /api/v1/auth/2fa/setup` - Generate TOTP secret
+- `POST /api/v1/auth/2fa/verify` - Verify and enable 2FA
+- `POST /api/v1/auth/2fa/disable` - Disable 2FA
 
-*(A list of events that this service publishes (e.g., `user.registered`) and subscribes to on the event bus (Kafka) will be added here.)*
+### Users
+- `GET /api/v1/users/me` - Get current user profile (Cached)
+
+## Events Published (Kafka)
+
+- `USER_REGISTERED`: When a new user creates an account.
+- `USER_LOGGED_IN`: When a user successfully authenticates.
+- `EMAIL_VERIFIED`: When a user confirms their email address.
+
+## Development
+
+```bash
+# Install dependencies
+npm install
+
+# Run database migrations
+npx prisma migrate dev
+
+# Start in development mode
+npm run dev
+
+# Run tests
+npm test
+```
