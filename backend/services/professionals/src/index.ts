@@ -5,7 +5,7 @@ import { createServer } from 'http';
 import { config } from './config';
 import { logger } from './utils/logger';
 import { errorHandler } from './middleware/errorHandler';
-import { professionalRoutes } from './routes/professionals.routes';
+import { professionalRoutes } from './routes/professional.routes';
 import { prisma } from './lib/prisma';
 import { redis } from './lib/redis';
 import { kafka } from './lib/kafka';
