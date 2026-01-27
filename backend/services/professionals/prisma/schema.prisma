@@ -489,6 +489,7 @@ enum AppointmentStatus {
 // ============================================================================
 
 model Employee {
+  // Contacto Employee Model
   id           String   @id @default(uuid())
   merchantId   String   @map("merchant_id")
   userId       String?  @map("user_id")

@@ -6,7 +6,7 @@ import { AppError } from '../utils/errors';
  * Ensures users have the required role to access a resource.
  */
 export const authorize = (...roles: string[]) => {
-  return (req: Request, res: Response, next: NextFunction) => {
+  return (req: Request, _res: Response, next: NextFunction) => {
     if (!req.user) {
       return next(new AppError(401, 'UNAUTHORIZED', 'Authentication required'));
     }
@@ -27,7 +27,7 @@ export const requireTier = (minTier: 'free' | 'basic' | 'pro' | 'enterprise') =>
   const tiers = ['free', 'basic', 'pro', 'enterprise'];
   const minTierIndex = tiers.indexOf(minTier);
 
-  return async (req: Request, res: Response, next: NextFunction) => {
+  return async (_req: Request, _res: Response, next: NextFunction) => {
     // This would typically involve fetching the professional profile associated with the user
     // For now, we demonstrate the pattern as an extensible middleware.
 

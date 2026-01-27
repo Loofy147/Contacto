@@ -32,6 +32,10 @@ const services = [
   {
     path: ['/api/v1/professionals'],
     target: process.env.PROFESSIONALS_SERVICE_URL || 'http://localhost:3003',
+  },
+  {
+    path: ['/api/v1/crm'],
+    target: process.env.CRM_SERVICE_URL || 'http://localhost:3001',
   }
 ];
 
