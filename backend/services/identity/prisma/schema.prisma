@@ -55,6 +55,7 @@ model User {
   passwordResets  PasswordReset[]
   reviews         Review[]
   appointments    Appointment[]
+  employees       Employee[]
 
   @@index([email])
   @@index([phone])
